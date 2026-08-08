@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Paleta profesional matematica (tema claro): variables CSS crudas para gradientes, glow
+       y keyframes que los tokens de Tailwind (bg-math-*) no pueden expresar directamente. */
+    --navy: #f8fafc;
+    --midnight: #ffffff;
+    --blue: #1d4ed8;
+    --cyan: #0891b2;
+    --gold: #d97706;
+    --silver: #64748b;
+    --white: #0f172a;
+    --success: #16a34a;
+    --error: #dc2626;
+
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

@@ -1,0 +1,28 @@
+# dependencies
+node_modules
+
+# build output
+dist
+dist-ssr
+stats.html
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.claude/
+
+# logs
+*.log
+npm-debug.log*
+
+# os
+.DS_Store
+
+# pwa generated
+dev-dist
