@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { areasFallback } from '../../src/data/areas';
-import { requireMethod } from '../_lib/http';
+import { areasFallback } from '../../src/data/areas.js';
+import { requireMethod } from '../_lib/http.js';
 
 /**
  * Catalogo curricular servido desde el mismo modulo de datos que usa el

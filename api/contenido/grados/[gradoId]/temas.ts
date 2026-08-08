@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { temasFallback } from '../../../../src/data/temas';
-import { requireMethod } from '../../../_lib/http';
+import { temasFallback } from '../../../../src/data/temas.js';
+import { requireMethod } from '../../../_lib/http.js';
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   if (!requireMethod(req, res, 'GET')) return;

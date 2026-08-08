@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { generarJson, type GeminiJsonSchema } from '../_lib/gemini';
-import { requireMethod, responderError } from '../_lib/http';
+import { generarJson, type GeminiJsonSchema } from '../_lib/gemini.js';
+import { requireMethod, responderError } from '../_lib/http.js';
 
 const ESQUEMA_PREDICCION: GeminiJsonSchema = {
   type: 'object',
