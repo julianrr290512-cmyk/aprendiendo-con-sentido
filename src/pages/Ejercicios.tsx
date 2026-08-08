@@ -1,11 +1,15 @@
 import { memo, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ejerciciosFallback, mapaTransferenciaFallback } from '@/data/contenidoNivel';
+import { mapaTransferenciaFallback } from '@/data/contenidoNivel';
+import { gradosFallback, nivelesFallback, temasFallback } from '@/data/temas';
 import type { MetacognicionRespuesta, RespuestaEjercicio } from '@/types';
 import { useProgressStore } from '@/store/progressStore';
+import { useEjerciciosGenerados } from '@/hooks/useFaseContent';
+import type { GenerarEjerciciosParams } from '@/services/ejercicioGenerator';
 import { EjercicioCard } from '@/components/exercises/EjercicioCard';
 import { MapaTransferencia } from '@/components/exercises/MapaTransferencia';
 import { Metacognicion } from '@/components/exercises/Metacognicion';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { rutas } from '@/router/routes';
 
 const PREGUNTAS_METACOGNICION = [
@@ -27,9 +31,24 @@ function EjerciciosPage() {
     'ejercicios',
   );
 
+  const nivel = useMemo(() => nivelesFallback.find((n) => n.id === nivelId), [nivelId]);
+  const tema = useMemo(() => temasFallback.find((t) => t.id === nivel?.temaId), [nivel]);
+  const grado = useMemo(() => gradosFallback.find((g) => g.id === tema?.gradoId), [tema]);
+
+  const parametrosEjercicios: GenerarEjerciciosParams | null = useMemo(() => {
+    if (!nivelId || !nivel || !tema || !grado) return null;
+    return {
+      nivelId,
+      temaNombre: tema.nombre,
+      areaId: tema.areaId,
+      dificultad: nivel.dificultad,
+    };
+  }, [nivelId, nivel, tema, grado]);
+
+  const ejerciciosGenerados = useEjerciciosGenerados(parametrosEjercicios);
   const ejercicios = useMemo(
-    () => (nivelId ? (ejerciciosFallback[nivelId] ?? []) : []),
-    [nivelId],
+    () => ejerciciosGenerados.data?.ejercicios ?? [],
+    [ejerciciosGenerados.data],
   );
   const mapaTransferencia = useMemo(
     () => (nivelId ? (mapaTransferenciaFallback[nivelId] ?? []) : []),
@@ -72,8 +91,20 @@ function EjerciciosPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-6 py-16">
-      {etapa === 'ejercicios' && (
+      {etapa === 'ejercicios' && ejerciciosGenerados.isLoading && (
         <div className="space-y-6">
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      )}
+
+      {etapa === 'ejercicios' && !ejerciciosGenerados.isLoading && (
+        <div className="space-y-6">
+          {ejercicios.length === 0 && (
+            <p className="text-center text-sm text-math-silver">
+              No hay ejercicios disponibles para este nivel todavia.
+            </p>
+          )}
           {ejercicios.map((ejercicio) => (
             <EjercicioCard
               key={ejercicio.id}
@@ -83,7 +114,7 @@ function EjerciciosPage() {
               }
             />
           ))}
-          {respuestas.length >= ejercicios.length && ejercicios.length > 0 && (
+          {respuestas.length >= ejercicios.length && (
             <button
               type="button"
               className="w-full rounded-md bg-primary py-2 text-sm text-primary-foreground"

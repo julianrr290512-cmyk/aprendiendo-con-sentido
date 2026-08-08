@@ -62,4 +62,13 @@ export const ANALOGIAS_PRESET: Record<AreaId, Analogia> = {
     descripcionReal: 'La velocidad de un corredor en el metro 50 es la razon de cambio de su posicion en ese instante.',
     keywordImagen: 'running,track',
   },
+  fisica: {
+    areaId: 'fisica',
+    icono: '🚴',
+    tituloConcepto: 'Movimiento y fuerza',
+    descripcionConcepto: 'La velocidad, la aceleracion y la fuerza describen como cambia el movimiento de un objeto.',
+    tituloReal: 'Un ciclista subiendo el Alto de Letras',
+    descripcionReal: 'Un ciclista colombiano en la subida mas larga del mundo siente en el cuerpo la relacion entre fuerza, masa y aceleracion.',
+    keywordImagen: 'cycling,mountain',
+  },
 };

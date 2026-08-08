@@ -14,7 +14,6 @@ export function trackEvent(
   };
 
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
     console.info('[analytics]', evento);
   }
 

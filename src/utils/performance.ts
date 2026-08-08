@@ -21,7 +21,6 @@ export function reportWebVitals(onMetric?: (metric: WebVitalMetric) => void): vo
   const handle = (metric: Metric) => {
     const parsed = toWebVitalMetric(metric);
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.info(`[web-vitals] ${parsed.name}: ${parsed.value.toFixed(2)} (${parsed.rating})`);
     }
     onMetric?.(parsed);
@@ -39,7 +38,6 @@ export function measureRenderTime(label: string, fn: () => void): void {
   fn();
   const duration = performance.now() - start;
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
     console.debug(`[perf] ${label}: ${duration.toFixed(2)}ms`);
   }
 }

@@ -178,8 +178,58 @@ const estandaresMatematicas: Record<string, EstandarBC[]> = {
   ],
 };
 
+/**
+ * Los Estandares Basicos de Competencias en Ciencias Naturales (MEN, 2004) agrupan
+ * biologia, quimica y fisica bajo tres ejes ("Entorno vivo", "Entorno fisico",
+ * "Ciencia, tecnologia y sociedad"). Estos enunciados se centran en el eje "Entorno
+ * fisico" y estan redactados especificamente para fisica, siguiendo el mismo
+ * formato (EstandarBC) que matematicas para mantener consistencia dentro de la app.
+ */
+const estandaresFisica: Record<string, EstandarBC[]> = {
+  '8-9': [
+    {
+      pensamiento: 'Entorno fisico',
+      grupoGrados: '8-9',
+      enunciado: 'Explico el movimiento de objetos a partir de conceptos de posicion, velocidad y aceleracion.',
+    },
+    {
+      pensamiento: 'Entorno fisico',
+      grupoGrados: '8-9',
+      enunciado: 'Verifico el efecto de las fuerzas sobre el estado de reposo o movimiento de un objeto.',
+    },
+    {
+      pensamiento: 'Ciencia, tecnologia y sociedad',
+      grupoGrados: '8-9',
+      enunciado: 'Relaciono el movimiento de objetos cotidianos con principios fisicos usando datos y graficas.',
+    },
+  ],
+  '10-11': [
+    {
+      pensamiento: 'Entorno fisico',
+      grupoGrados: '10-11',
+      enunciado: 'Establezco relaciones entre fuerza, masa y aceleracion para predecir el movimiento de un cuerpo.',
+    },
+    {
+      pensamiento: 'Entorno fisico',
+      grupoGrados: '10-11',
+      enunciado: 'Explico fenomenos de reflexion y refraccion de la luz a partir de su naturaleza ondulatoria.',
+    },
+    {
+      pensamiento: 'Entorno fisico',
+      grupoGrados: '10-11',
+      enunciado: 'Comparo cuantitativamente la energia cinetica y potencial de un cuerpo bajo distintas condiciones.',
+    },
+    {
+      pensamiento: 'Ciencia, tecnologia y sociedad',
+      grupoGrados: '10-11',
+      enunciado: 'Analizo el funcionamiento de tecnologias cotidianas (opticas, electricas) a partir de leyes fisicas.',
+    },
+  ],
+};
+
 export const estandaresLocal: Partial<Record<AreaId, Record<string, EstandarBC[]>>> = {
   matematicas: estandaresMatematicas,
+  fisica: estandaresFisica,
 };
 
 const BANDAS_GRADO: Array<{ rango: [number, number]; banda: string }> = [

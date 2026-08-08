@@ -95,6 +95,38 @@ const dbaMatematicas: Record<number, string[]> = {
   ],
 };
 
+/**
+ * Fisica no tiene un documento DBA propio del MEN (el DBA de Ciencias Naturales
+ * cubre biologia, quimica y fisica de forma integrada). Estos enunciados son una
+ * redaccion propia, centrada en fisica, que sigue el mismo formato y nivel de
+ * profundidad que los DBA oficiales de matematicas para mantener consistencia
+ * pedagogica dentro de la app.
+ */
+const dbaFisica: Record<number, string[]> = {
+  9: [
+    'Explica el movimiento rectilineo uniforme de un objeto a partir de las relaciones entre posicion, velocidad y tiempo.',
+    'Diferencia el movimiento rectilineo uniforme del movimiento con aceleracion constante mediante graficas de posicion y velocidad.',
+    'Relaciona la fuerza neta aplicada sobre un objeto con los cambios en su estado de movimiento (primera ley de Newton).',
+    'Analiza situaciones cotidianas usando el concepto de energia mecanica y su conservacion en ausencia de friccion.',
+    'Disena y realiza experimentos sencillos de medicion de tiempo, distancia y velocidad, y comunica sus resultados.',
+  ],
+  10: [
+    'Aplica la segunda ley de Newton (F = m·a) para explicar y predecir el movimiento de objetos sometidos a fuerzas.',
+    'Analiza el movimiento de caida libre y de proyectiles descomponiendo el movimiento en sus componentes horizontal y vertical.',
+    'Relaciona el trabajo mecanico con los cambios de energia cinetica y potencial de un sistema.',
+    'Interpreta datos experimentales de fuerza, masa y aceleracion, y estima el margen de error de sus mediciones.',
+    'Explica fenomenos de la vida cotidiana (choques, caidas, lanzamientos) usando las leyes de Newton y la conservacion de la energia.',
+  ],
+  11: [
+    'Explica la reflexion y la refraccion de la luz usando el modelo ondulatorio y las leyes de Snell.',
+    'Relaciona los fenomenos electricos y magneticos basicos con situaciones tecnologicas cotidianas.',
+    'Analiza circuitos electricos sencillos en serie y en paralelo usando la ley de Ohm.',
+    'Explica fenomenos ondulatorios (sonido, luz) a partir de conceptos de frecuencia, longitud de onda y velocidad de propagacion.',
+    'Disena experimentos para comprobar leyes fisicas (optica, electricidad) y comunica sus conclusiones con evidencia cuantitativa.',
+  ],
+};
+
 export const dbaLocal: Partial<Record<AreaId, Record<number, string[]>>> = {
   matematicas: dbaMatematicas,
+  fisica: dbaFisica,
 };

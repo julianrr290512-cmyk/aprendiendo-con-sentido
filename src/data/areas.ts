@@ -41,4 +41,12 @@ export const areasFallback: Area[] = [
     color: '#0ea5e9',
     gradosDisponibles: [10, 11],
   },
+  {
+    id: 'fisica',
+    nombre: 'Fisica',
+    descripcion: 'Movimiento, fuerzas, energia y luz',
+    icono: 'atom',
+    color: '#f97316',
+    gradosDisponibles: [9, 10, 11],
+  },
 ];

@@ -6,7 +6,6 @@ export function useRenderCount(label: string): number {
 
   useEffect(() => {
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
       console.debug(`[render] ${label}: ${count.current}`);
     }
   });
@@ -20,7 +19,6 @@ export function useMountedTime(label: string): void {
     return () => {
       if (import.meta.env.DEV) {
         const duration = performance.now() - start;
-        // eslint-disable-next-line no-console
         console.debug(`[mounted] ${label}: ${duration.toFixed(0)}ms`);
       }
     };

@@ -1,4 +1,4 @@
-export type AreaIconName = 'sigma' | 'triangle' | 'bar-chart' | 'function-square' | 'infinity';
+export type AreaIconName = 'sigma' | 'triangle' | 'bar-chart' | 'function-square' | 'infinity' | 'atom';
 
 /** Simbolo unicode representativo de cada area, usado en la explosion de particulas al hover. */
 export const AREA_SIMBOLO: Record<AreaIconName, string> = {
@@ -7,4 +7,5 @@ export const AREA_SIMBOLO: Record<AreaIconName, string> = {
   'bar-chart': '▦',
   'function-square': 'f(x)',
   infinity: '∞',
+  atom: '⚛',
 };

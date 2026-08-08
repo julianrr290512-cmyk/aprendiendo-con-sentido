@@ -7,7 +7,8 @@ export type AreaId =
   | 'geometria'
   | 'estadistica'
   | 'algebra'
-  | 'calculo';
+  | 'calculo'
+  | 'fisica';
 
 export interface Area {
   id: AreaId;
