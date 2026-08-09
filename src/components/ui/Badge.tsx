@@ -18,7 +18,7 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 /**
- * Primitiva visual generica para fuente del contenido, nivel de dificultad y logros.
+ * Primitiva visual generica para fuente del contenido, nivel de Bloom y logros.
  * Componentes de mas alto nivel (FuenteContenidoBadge, etc.) se apoyan en esta.
  */
 export const Badge = memo(function Badge({ variant = 'default', className, ...props }: BadgeProps) {

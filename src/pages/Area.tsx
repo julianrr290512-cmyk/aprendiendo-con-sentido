@@ -1,34 +1,35 @@
 import { memo, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAreas, useGradosPorArea } from '@/hooks/useContent';
+import { useAreas } from '@/hooks/useContent';
 import { useNavigation } from '@/hooks/useNavigation';
 import { useSessionStore } from '@/store/sessionStore';
 import { PageTransition } from '@/components/PageTransition';
 import { SelectionHeader } from '@/components/navigation/SelectionHeader';
-import { GradoTimeline } from '@/components/selection/GradoTimeline';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { BuscadorTema } from '@/components/selection/BuscadorTema';
 import { rutas } from '@/router/routes';
-import type { AreaId, Grado } from '@/types';
+import { construirTemaId } from '@/utils/slugify';
+import type { AreaId } from '@/types';
 
 function AreaPage() {
   const { areaId } = useParams<{ areaId: AreaId }>();
   const { data: areasData } = useAreas();
-  const { data, isLoading } = useGradosPorArea(areaId ?? null);
   const { navegarA } = useNavigation();
-  const setGrado = useSessionStore((state) => state.setGrado);
-  const grados = useMemo(() => data?.data ?? [], [data]);
+  const setTema = useSessionStore((state) => state.setTema);
+
   const area = useMemo(
     () => areasData?.data.find((a) => a.id === areaId),
     [areasData, areaId],
   );
 
-  const seleccionarGrado = useCallback(
-    (grado: Grado) => {
-      setGrado(grado.id);
-      navegarA('grado', rutas.grado(areaId ?? '', grado.id));
+  const irAExperiencia = useCallback(
+    (temaNombre: string) => {
+      if (!areaId) return;
+      const temaId = construirTemaId({ areaId: areaId as AreaId, temaNombre });
+      setTema({ temaId, temaNombre });
+      navegarA('experiencia', rutas.experiencia(temaId));
     },
-    [areaId, navegarA, setGrado],
+    [areaId, setTema, navegarA],
   );
 
   return (
@@ -50,22 +51,15 @@ function AreaPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
-        Selecciona el grado con el que quieres trabajar.
+        Escribe cualquier tema del área o elige una sugerencia — la ruta pedagógica se genera para
+        el tema exacto que pidas, a nivel alto.
       </motion.p>
 
-      <div className="mt-12">
-        {isLoading ? (
-          <div className="flex gap-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-16 shrink-0" />
-            ))}
-          </div>
+      <div className="mt-8">
+        {areaId ? (
+          <BuscadorTema areaId={areaId as AreaId} onSeleccionar={irAExperiencia} />
         ) : (
-          <GradoTimeline
-            grados={grados}
-            colorAcento={area?.color ?? '#0891b2'}
-            onSelect={seleccionarGrado}
-          />
+          <div className="h-40 animate-pulse rounded-lg bg-math-midnight/60" />
         )}
       </div>
     </PageTransition>

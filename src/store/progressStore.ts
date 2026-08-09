@@ -1,107 +1,73 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { FaseTipo, ProgresoTema, ResultadoNivel, SimulacionTelemetria } from '@/types';
+import type { FaseTipo, ResultadoSesion } from '@/types';
 
 const ESTRELLAS_INICIALES = 3;
 
 interface ProgressState {
-  resultadosPorNivel: Record<string, ResultadoNivel>;
-  progresoPorTema: Record<string, ProgresoTema>;
-  fasesCompletadasPorNivel: Record<string, FaseTipo[]>;
-  /** Hipotesis de prediccion (texto libre) que el estudiante escribio, por nivel. */
-  prediccionesPorNivel: Record<string, string>;
-  /** Reflexion final de la fase de formalizacion, por nivel. */
-  reflexionesPorNivel: Record<string, string>;
+  resultadosPorTema: Record<string, ResultadoSesion>;
+  fasesCompletadasPorTema: Record<string, FaseTipo[]>;
+  /** Hipotesis de prediccion (texto libre) que el estudiante escribio, por tema. */
+  prediccionesPorTema: Record<string, string[]>;
   /** Estrellas restantes tras usar pistas en la fase de exploracion (max 3, -1 por pista). */
-  estrellasExploracionPorNivel: Record<string, number>;
-  telemetriaSimulacionPorNivel: Record<string, SimulacionTelemetria>;
-  registrarFaseCompletada: (nivelId: string, fase: FaseTipo) => void;
-  registrarResultadoNivel: (resultado: ResultadoNivel) => void;
-  obtenerProgresoTema: (temaId: string) => ProgresoTema | undefined;
-  actualizarProgresoTema: (progreso: ProgresoTema) => void;
-  guardarPrediccion: (nivelId: string, texto: string) => void;
-  guardarReflexion: (nivelId: string, texto: string) => void;
-  descontarEstrellaExploracion: (nivelId: string) => void;
-  registrarTelemetriaSimulacion: (telemetria: SimulacionTelemetria) => void;
+  estrellasExploracionPorTema: Record<string, number>;
+  registrarFaseCompletada: (temaId: string, fase: FaseTipo) => void;
+  registrarResultadoSesion: (resultado: ResultadoSesion) => void;
+  guardarPredicciones: (temaId: string, textos: string[]) => void;
+  descontarEstrellaExploracion: (temaId: string) => void;
   reiniciarProgreso: () => void;
 }
 
 export const useProgressStore = create<ProgressState>()(
   persist(
-    (set, get) => ({
-      resultadosPorNivel: {},
-      progresoPorTema: {},
-      fasesCompletadasPorNivel: {},
-      prediccionesPorNivel: {},
-      reflexionesPorNivel: {},
-      estrellasExploracionPorNivel: {},
-      telemetriaSimulacionPorNivel: {},
+    (set) => ({
+      resultadosPorTema: {},
+      fasesCompletadasPorTema: {},
+      prediccionesPorTema: {},
+      estrellasExploracionPorTema: {},
 
-      registrarFaseCompletada: (nivelId, fase) =>
+      registrarFaseCompletada: (temaId, fase) =>
         set((state) => {
-          const actuales = state.fasesCompletadasPorNivel[nivelId] ?? [];
+          const actuales = state.fasesCompletadasPorTema[temaId] ?? [];
           if (actuales.includes(fase)) return state;
           return {
-            fasesCompletadasPorNivel: {
-              ...state.fasesCompletadasPorNivel,
-              [nivelId]: [...actuales, fase],
+            fasesCompletadasPorTema: {
+              ...state.fasesCompletadasPorTema,
+              [temaId]: [...actuales, fase],
             },
           };
         }),
 
-      registrarResultadoNivel: (resultado) =>
+      registrarResultadoSesion: (resultado) =>
         set((state) => ({
-          resultadosPorNivel: {
-            ...state.resultadosPorNivel,
-            [resultado.nivelId]: resultado,
+          resultadosPorTema: {
+            ...state.resultadosPorTema,
+            [resultado.temaId]: resultado,
           },
         })),
 
-      obtenerProgresoTema: (temaId) => get().progresoPorTema[temaId],
-
-      actualizarProgresoTema: (progreso) =>
+      guardarPredicciones: (temaId, textos) =>
         set((state) => ({
-          progresoPorTema: { ...state.progresoPorTema, [progreso.temaId]: progreso },
+          prediccionesPorTema: { ...state.prediccionesPorTema, [temaId]: textos },
         })),
 
-      guardarPrediccion: (nivelId, texto) =>
-        set((state) => ({
-          prediccionesPorNivel: { ...state.prediccionesPorNivel, [nivelId]: texto },
-        })),
-
-      guardarReflexion: (nivelId, texto) =>
-        set((state) => ({
-          reflexionesPorNivel: { ...state.reflexionesPorNivel, [nivelId]: texto },
-        })),
-
-      descontarEstrellaExploracion: (nivelId) =>
+      descontarEstrellaExploracion: (temaId) =>
         set((state) => {
-          const actuales = state.estrellasExploracionPorNivel[nivelId] ?? ESTRELLAS_INICIALES;
+          const actuales = state.estrellasExploracionPorTema[temaId] ?? ESTRELLAS_INICIALES;
           return {
-            estrellasExploracionPorNivel: {
-              ...state.estrellasExploracionPorNivel,
-              [nivelId]: Math.max(0, actuales - 1),
+            estrellasExploracionPorTema: {
+              ...state.estrellasExploracionPorTema,
+              [temaId]: Math.max(0, actuales - 1),
             },
           };
         }),
-
-      registrarTelemetriaSimulacion: (telemetria) =>
-        set((state) => ({
-          telemetriaSimulacionPorNivel: {
-            ...state.telemetriaSimulacionPorNivel,
-            [telemetria.nivelId]: telemetria,
-          },
-        })),
 
       reiniciarProgreso: () =>
         set({
-          resultadosPorNivel: {},
-          progresoPorTema: {},
-          fasesCompletadasPorNivel: {},
-          prediccionesPorNivel: {},
-          reflexionesPorNivel: {},
-          estrellasExploracionPorNivel: {},
-          telemetriaSimulacionPorNivel: {},
+          resultadosPorTema: {},
+          fasesCompletadasPorTema: {},
+          prediccionesPorTema: {},
+          estrellasExploracionPorTema: {},
         }),
     }),
     { name: 'acs-progress-store' },

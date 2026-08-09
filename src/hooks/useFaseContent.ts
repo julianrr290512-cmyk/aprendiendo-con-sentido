@@ -5,7 +5,6 @@ import {
   type GenerarFaseParams,
 } from '@/services/faseGenerator';
 import { generarEjercicios, type GenerarEjerciciosParams } from '@/services/ejercicioGenerator';
-import { generarSimulacion } from '@/services/simulacionGenerator';
 import { generarFormalizacion } from '@/services/formalizacionGenerator';
 
 export function usePreguntaPrediccion(params: GenerarFaseParams | null) {
@@ -28,16 +27,6 @@ export function useEscenariosExploracion(params: GenerarFaseParams | null) {
   });
 }
 
-export function useSimulacionGenerada(params: GenerarFaseParams | null) {
-  return useQuery({
-    queryKey: ['fase-simulacion', params?.temaId],
-    queryFn: () => generarSimulacion(params as GenerarFaseParams),
-    enabled: Boolean(params),
-    staleTime: 60 * 60 * 1000,
-    retry: false,
-  });
-}
-
 export function useFormalizacionGenerada(params: GenerarFaseParams | null) {
   return useQuery({
     queryKey: ['fase-formalizacion', params?.temaId],
@@ -50,7 +39,7 @@ export function useFormalizacionGenerada(params: GenerarFaseParams | null) {
 
 export function useEjerciciosGenerados(params: GenerarEjerciciosParams | null) {
   return useQuery({
-    queryKey: ['ejercicios', params?.nivelId],
+    queryKey: ['ejercicios', params?.temaId],
     queryFn: () => generarEjercicios(params as GenerarEjerciciosParams),
     enabled: Boolean(params),
     staleTime: 60 * 60 * 1000,

@@ -4,9 +4,7 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/narrativa/slides.ts": { "maxDuration": 30 },
     "api/fases/prediccion.ts": { "maxDuration": 30 },
-    "api/fases/simulacion.ts": { "maxDuration": 30 },
     "api/fases/exploracion.ts": { "maxDuration": 30 },
     "api/fases/formalizacion.ts": { "maxDuration": 30 },
     "api/ejercicios/generar.ts": { "maxDuration": 30 }

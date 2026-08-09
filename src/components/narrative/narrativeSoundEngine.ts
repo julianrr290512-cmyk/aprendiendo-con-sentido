@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { useSessionStore } from '@/store/sessionStore';
-import type { SlideSonido } from '@/types';
 
-export type EfectoSonido = SlideSonido | 'acierto' | 'error' | 'transicion';
+export type EfectoSonido = 'intro' | 'tension' | 'descubrimiento' | 'logro' | 'acierto' | 'error' | 'transicion';
 
 let contexto: AudioContext | null = null;
 

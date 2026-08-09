@@ -1,17 +1,18 @@
-import type { AreaId, Ejercicio } from '@/types';
+import type { AreaId, Ejercicio, NivelBloom } from '@/types';
 import { aiClient } from './apiClient';
 import { obtenerEntradaCache, guardarEntradaCache } from './contentCache';
 import { retryWithBackoff } from '@/utils/retry';
-import { ejerciciosFallback } from '@/data/contenidoNivel';
+import { generarEjerciciosFallbackGenerico } from '@/data/ejerciciosFallbackGenerico';
 
 const TTL_CACHE_MS = 30 * 24 * 60 * 60 * 1000;
-const CANTIDAD_EJERCICIOS = 4;
+const CANTIDAD_EJERCICIOS = 5;
+const NIVELES_BLOOM: NivelBloom[] = ['comprender', 'aplicar', 'analizar', 'evaluar', 'crear'];
+const TIPOS_VALIDOS = ['opcion-multiple', 'respuesta-abierta', 'formula'];
 
 export interface GenerarEjerciciosParams {
-  nivelId: string;
+  temaId: string;
   temaNombre: string;
   areaId: AreaId;
-  dificultad: 'introductorio' | 'intermedio' | 'avanzado';
 }
 
 export interface EjerciciosResult {
@@ -19,8 +20,8 @@ export interface EjerciciosResult {
   fuente: 'api' | 'local';
 }
 
-function claveCache(nivelId: string): string {
-  return `ejercicios:${nivelId}`;
+function claveCache(temaId: string): string {
+  return `ejercicios:${temaId}`;
 }
 
 function esEjercicioValido(valor: unknown): valor is Ejercicio {
@@ -29,6 +30,10 @@ function esEjercicioValido(valor: unknown): valor is Ejercicio {
   return (
     typeof e.id === 'string' &&
     typeof e.tipo === 'string' &&
+    TIPOS_VALIDOS.includes(e.tipo) &&
+    typeof e.nivelBloom === 'string' &&
+    NIVELES_BLOOM.includes(e.nivelBloom as NivelBloom) &&
+    typeof e.esTransferencia === 'boolean' &&
     typeof e.enunciado === 'string' &&
     typeof e.retroalimentacionCorrecta === 'string' &&
     typeof e.retroalimentacionIncorrecta === 'string' &&
@@ -39,26 +44,26 @@ function esEjercicioValido(valor: unknown): valor is Ejercicio {
 async function solicitarEjerciciosRemoto(params: GenerarEjerciciosParams): Promise<Ejercicio[]> {
   const { data } = await aiClient.post<{ ejercicios?: unknown[] }>('/ejercicios/generar', {
     temaId: params.temaNombre,
-    dificultad: params.dificultad,
+    areaId: params.areaId,
     cantidad: CANTIDAD_EJERCICIOS,
   });
   if (!Array.isArray(data.ejercicios) || !data.ejercicios.every(esEjercicioValido)) {
     throw new Error('Respuesta de /ejercicios/generar con formato invalido');
   }
-  return data.ejercicios.map((ej) => ({ ...ej, nivelId: params.nivelId }));
+  return data.ejercicios.map((ej) => ({ ...ej, temaId: params.temaId }));
 }
 
 function generarEjerciciosLocalFallback(params: GenerarEjerciciosParams): Ejercicio[] {
-  return ejerciciosFallback[params.nivelId] ?? [];
+  return generarEjerciciosFallbackGenerico(params.temaId, params.temaNombre);
 }
 
 /**
- * Obtiene los ejercicios de practica para un nivel, en cascada: cache valida
- * (30 dias) -> backend propio (Gemini) -> ejercicios locales garantizados
- * (que pueden ser una lista vacia si el nivel no tiene fallback estatico).
+ * Obtiene los 5 ejercicios de practica para un tema, en cascada: cache
+ * valida (30 dias) -> backend propio (Gemini) -> ejercicios locales
+ * genericos garantizados.
  */
 export async function generarEjercicios(params: GenerarEjerciciosParams): Promise<EjerciciosResult> {
-  const clave = claveCache(params.nivelId);
+  const clave = claveCache(params.temaId);
   const cache = await obtenerEntradaCache<EjerciciosResult>(clave);
 
   if (cache) {

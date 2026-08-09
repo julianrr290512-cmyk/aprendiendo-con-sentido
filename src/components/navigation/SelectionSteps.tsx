@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/utils/cn';
 
-const PASOS = ['Inicio', 'Área', 'Grado', 'Tema', 'Nivel'] as const;
+const PASOS = ['Inicio', 'Área', 'Tema'] as const;
 
 interface SelectionStepsProps {
   /** Indice (0-based) del paso activo dentro de PASOS. */
@@ -12,8 +12,8 @@ interface SelectionStepsProps {
 
 /**
  * Barra de progreso superior del flujo de seleccion (no confundir con el ProgressBar de fases
- * POE dentro de un nivel). Muestra los 5 pasos Inicio > Area > Grado > Tema > Nivel con el
- * tramo recorrido relleno en degradado cyan->gold.
+ * dentro de una experiencia). Muestra los 3 pasos Inicio > Area > Tema con el tramo recorrido
+ * relleno en degradado cyan->gold.
  */
 export const SelectionSteps = memo(function SelectionSteps({ step, className }: SelectionStepsProps) {
   const porcentaje = (step / (PASOS.length - 1)) * 100;

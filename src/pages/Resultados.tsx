@@ -2,26 +2,28 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useParams } from 'react-router-dom';
 import { useProgressStore } from '@/store/progressStore';
+import { useSessionStore } from '@/store/sessionStore';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { rutas } from '@/router/routes';
 
 function ResultadosPage() {
-  const { nivelId } = useParams<{ nivelId: string }>();
+  const { temaId } = useParams<{ temaId: string }>();
   const resultado = useProgressStore((state) =>
-    nivelId ? state.resultadosPorNivel[nivelId] : undefined,
+    temaId ? state.resultadosPorTema[temaId] : undefined,
   );
+  const areaActualId = useSessionStore((state) => state.sesion.areaActualId);
 
   if (!resultado) {
-    return <div className="p-6 text-center text-muted-foreground">Aun no hay resultados para este nivel.</div>;
+    return <div className="p-6 text-center text-muted-foreground">Aun no hay resultados para este tema.</div>;
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-6 py-16">
       <Card>
         <CardHeader>
-          <CardTitle>Resultados del nivel</CardTitle>
+          <CardTitle>Resultados de la sesión</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
@@ -40,26 +42,40 @@ function ResultadosPage() {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            Fases completadas:{' '}
-            {resultado.fasesCompletadas.length ? (
-              resultado.fasesCompletadas.map((fase) => (
-                <Badge key={fase} variant="cyan" className="mr-1">
-                  {fase}
-                </Badge>
-              ))
-            ) : (
-              'ninguna'
-            )}
-          </p>
-          <p className="text-sm text-muted-foreground">
             Tiempo total: {Math.round(resultado.tiempoTotalMs / 1000)}s
           </p>
-
-          <Link to={rutas.inicio()}>
-            <Button className="w-full">Volver al inicio</Button>
-          </Link>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Retroalimentación por ejercicio</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {resultado.respuestas.map((respuesta, indice) => (
+            <div
+              key={respuesta.ejercicioId}
+              className="flex items-center justify-between gap-3 rounded-md border border-math-cyan/10 bg-math-navy/40 px-3 py-2"
+            >
+              <span className="text-sm text-math-white">Ejercicio {indice + 1}</span>
+              <Badge variant={respuesta.esCorrecta ? 'success' : 'error'}>
+                {respuesta.esCorrecta ? 'Correcto' : 'Por mejorar'}
+              </Badge>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-3">
+        {areaActualId && (
+          <Link to={rutas.area(areaActualId)} className="flex-1">
+            <Button className="w-full">Elegir otro tema</Button>
+          </Link>
+        )}
+        <Link to={rutas.inicio()} className="flex-1">
+          <Button variant="ghost" className="w-full">Volver al inicio</Button>
+        </Link>
+      </div>
     </div>
   );
 }

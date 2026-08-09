@@ -8,119 +8,135 @@ import { cn } from '@/utils/cn';
 
 interface PrediccionProps {
   fase: FasePrediccion;
-  onCompletar: (texto: string) => void;
+  /** Se llama una vez respondidas las 2 preguntas, con una respuesta por cada una. */
+  onCompletar: (textos: string[]) => void;
 }
 
 function contarPalabras(texto: string): number {
   return texto.trim().length === 0 ? 0 : texto.trim().split(/\s+/).length;
 }
 
-function formatearTiempo(segundos: number): string {
-  const m = Math.floor(segundos / 60);
-  const s = segundos % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-const DURACION_CAPSULA_MS = 1500;
-
 export const Prediccion = memo(function Prediccion({ fase, onCompletar }: PrediccionProps) {
-  const [texto, setTexto] = useState('');
-  const [guardando, setGuardando] = useState(false);
-  const [segundosTranscurridos, setSegundosTranscurridos] = useState(0);
-  const { reproducir } = useNarrativeSound();
+  const [indice, setIndice] = useState(0);
+  const [respuestas, setRespuestas] = useState<string[]>([]);
+  const pregunta = fase.preguntas[indice];
 
-  const palabras = useMemo(() => contarPalabras(texto), [texto]);
-  const listo = palabras >= fase.minPalabras;
+  if (!pregunta) return null;
 
-  useEffect(() => {
-    if (guardando) return undefined;
-    const intervalo = window.setInterval(() => setSegundosTranscurridos((prev) => prev + 1), 1000);
-    return () => window.clearInterval(intervalo);
-  }, [guardando]);
-
-  const guardar = useCallback(() => {
-    if (!listo || guardando) return;
-    setGuardando(true);
-    reproducir('descubrimiento');
-    window.setTimeout(() => onCompletar(texto.trim()), DURACION_CAPSULA_MS);
-  }, [listo, guardando, reproducir, onCompletar, texto]);
+  const esUltima = indice === fase.preguntas.length - 1;
 
   return (
     <Card>
-      <CardHeader className="flex-row items-start justify-between gap-3">
-        <div>
-          <CardTitle>{fase.titulo}</CardTitle>
-          <p className="mt-1 text-sm text-math-silver">{fase.instrucciones}</p>
-        </div>
-        {!guardando && (
-          <span
-            className="shrink-0 rounded-full border border-math-silver/20 px-2.5 py-1 font-mono text-xs text-math-silver"
-            title="Tiempo transcurrido, sin presión: es solo informativo"
-          >
-            ⏱ {formatearTiempo(segundosTranscurridos)}
-            {fase.tiempoSugeridoSeg ? ` / ~${formatearTiempo(fase.tiempoSugeridoSeg)}` : ''}
-          </span>
-        )}
+      <CardHeader>
+        <CardTitle>{fase.titulo}</CardTitle>
+        <p className="mt-1 text-sm text-math-silver">
+          Pregunta {indice + 1} de {fase.preguntas.length} · {fase.instrucciones}
+        </p>
       </CardHeader>
 
-      <CardContent className="space-y-5">
+      <CardContent>
         <AnimatePresence mode="wait">
-          {!guardando ? (
-            <motion.div
-              key="formulario"
-              className="space-y-4"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0, scale: 0.9, filter: 'blur(4px)' }}
-              transition={{ duration: 0.4 }}
-            >
-              {fase.contexto && (
-                <p className="rounded-md border border-math-cyan/10 bg-math-navy/50 p-3 text-sm text-math-silver">
-                  {fase.contexto}
-                </p>
-              )}
-              <p className="font-display text-lg font-medium text-math-white">{fase.pregunta}</p>
-
-              <div className="space-y-1.5">
-                <textarea
-                  value={texto}
-                  onChange={(evento) => setTexto(evento.target.value)}
-                  rows={5}
-                  placeholder="Escribe tu hipótesis y explica tu razonamiento..."
-                  className="w-full resize-none rounded-md border border-math-cyan/15 bg-math-midnight/80 px-3 py-2.5 text-sm text-math-white outline-none transition-colors placeholder:text-math-silver/40 focus:border-math-cyan/50"
-                />
-                <div className="flex items-center justify-between text-xs">
-                  <span className={cn(listo ? 'text-math-success' : 'text-math-silver')}>
-                    {palabras} / {fase.minPalabras} palabras mínimas
-                  </span>
-                  <div className="h-1 w-32 overflow-hidden rounded-full bg-math-midnight">
-                    <motion.div
-                      className={cn('h-full rounded-full', listo ? 'bg-math-success' : 'bg-math-cyan')}
-                      animate={{ width: `${Math.min(100, (palabras / fase.minPalabras) * 100)}%` }}
-                      transition={{ duration: 0.2 }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button className="w-full" disabled={!listo} onClick={guardar}>
-                Guardar mi predicción
-              </Button>
-            </motion.div>
-          ) : (
-            <CapsulaDelTiempo key="capsula" palabras={palabras} />
-          )}
+          <PreguntaTarjeta
+            key={indice}
+            pregunta={pregunta}
+            esUltima={esUltima}
+            onResponder={(texto) => {
+              const siguientes = [...respuestas, texto];
+              setRespuestas(siguientes);
+              if (esUltima) onCompletar(siguientes);
+              else setIndice((prev) => prev + 1);
+            }}
+          />
         </AnimatePresence>
       </CardContent>
     </Card>
   );
 });
 
+const DURACION_CAPSULA_MS = 1200;
+
+interface PreguntaTarjetaProps {
+  pregunta: FasePrediccion['preguntas'][number];
+  esUltima: boolean;
+  onResponder: (texto: string) => void;
+}
+
+function PreguntaTarjeta({ pregunta, esUltima, onResponder }: PreguntaTarjetaProps) {
+  const [texto, setTexto] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const { reproducir } = useNarrativeSound();
+
+  const palabras = useMemo(() => contarPalabras(texto), [texto]);
+  const listo = palabras >= pregunta.minPalabras;
+
+  const guardar = useCallback(() => {
+    if (!listo || guardando) return;
+    setGuardando(true);
+    reproducir('descubrimiento');
+    window.setTimeout(() => onResponder(texto.trim()), DURACION_CAPSULA_MS);
+  }, [listo, guardando, reproducir, onResponder, texto]);
+
+  useEffect(() => {
+    setTexto('');
+    setGuardando(false);
+  }, [pregunta]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 16 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -16 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-4"
+    >
+      {guardando ? (
+        <CapsulaDelTiempo palabras={palabras} esUltima={esUltima} />
+      ) : (
+        <>
+          {pregunta.contexto && (
+            <p className="rounded-md border border-math-cyan/10 bg-math-navy/50 p-3 text-sm text-math-silver">
+              {pregunta.contexto}
+            </p>
+          )}
+          <p className="font-display text-lg font-medium text-math-white">{pregunta.pregunta}</p>
+
+          <div className="space-y-1.5">
+            <textarea
+              value={texto}
+              onChange={(evento) => setTexto(evento.target.value)}
+              rows={5}
+              placeholder="Escribe tu hipótesis y explica tu razonamiento..."
+              className="w-full resize-none rounded-md border border-math-cyan/15 bg-math-midnight/80 px-3 py-2.5 text-sm text-math-white outline-none transition-colors placeholder:text-math-silver/40 focus:border-math-cyan/50"
+            />
+            <div className="flex items-center justify-between text-xs">
+              <span className={cn(listo ? 'text-math-success' : 'text-math-silver')}>
+                {palabras} / {pregunta.minPalabras} palabras mínimas
+              </span>
+              <div className="h-1 w-32 overflow-hidden rounded-full bg-math-midnight">
+                <motion.div
+                  className={cn('h-full rounded-full', listo ? 'bg-math-success' : 'bg-math-cyan')}
+                  animate={{ width: `${Math.min(100, (palabras / pregunta.minPalabras) * 100)}%` }}
+                  transition={{ duration: 0.2 }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <Button className="w-full" disabled={!listo} onClick={guardar}>
+            Guardar mi predicción
+          </Button>
+        </>
+      )}
+    </motion.div>
+  );
+}
+
 const PARTICULAS_CAPSULA = Array.from({ length: 10 }, (_, i) => ({
   id: i,
   angulo: (i / 10) * Math.PI * 2,
 }));
 
-function CapsulaDelTiempo({ palabras }: { palabras: number }) {
+function CapsulaDelTiempo({ palabras, esUltima }: { palabras: number; esUltima: boolean }) {
   return (
     <motion.div
       className="relative flex flex-col items-center gap-4 py-6"
@@ -162,7 +178,7 @@ function CapsulaDelTiempo({ palabras }: { palabras: number }) {
           Tu predicción quedó guardada en una cápsula del tiempo
         </p>
         <p className="mt-1 text-xs text-math-silver">
-          {palabras} palabras · la abriremos en la fase de formalización
+          {palabras} palabras · {esUltima ? 'la abriremos en la formalización' : 'vamos con la siguiente pregunta'}
         </p>
       </motion.div>
     </motion.div>

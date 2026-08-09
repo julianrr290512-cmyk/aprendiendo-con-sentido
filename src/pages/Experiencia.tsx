@@ -5,22 +5,14 @@ import type {
   FaseExploracion,
   FaseFormalizacion,
   FasePrediccion,
-  FaseSimulacion,
   FormalizacionGeneradaResult,
-  MetacognicionRespuesta,
   PasoDeck,
-  PreguntaPrediccionResult,
+  PreguntaItem,
   RespuestaEjercicio,
-  SimulacionGeneradaResult,
-  SimulacionTelemetria,
 } from '@/types';
-import { mapaTransferenciaFallback } from '@/data/contenidoNivel';
-import { useContenidoCurricular } from '@/hooks/useContenidoCurricular';
-import { useNarrativeSlides } from '@/hooks/useNarrativeSlides';
 import {
   usePreguntaPrediccion,
   useEscenariosExploracion,
-  useSimulacionGenerada,
   useFormalizacionGenerada,
   useEjerciciosGenerados,
 } from '@/hooks/useFaseContent';
@@ -34,186 +26,108 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { rutas } from '@/router/routes';
 import type { GenerarFaseParams } from '@/services/faseGenerator';
 
-const PREGUNTAS_METACOGNICION = [
-  '¿Que fue lo mas dificil de este nivel?',
-  '¿Como podrias aplicar lo aprendido en otro contexto?',
-];
-
-function construirFasePrediccion(nivelId: string, resultado: PreguntaPrediccionResult): FasePrediccion {
+function construirFasePrediccion(temaId: string, preguntas: PreguntaItem[]): FasePrediccion {
   return {
-    id: `fase-prediccion-${nivelId}`,
+    id: `fase-prediccion-${temaId}`,
     tipo: 'prediccion',
-    nivelId,
+    temaId,
     titulo: 'Predicción',
     instrucciones: 'Antes de ver el concepto formal, escribe tu propia hipótesis.',
     completada: false,
     ordenIndex: 0,
-    pregunta: resultado.pregunta,
-    contexto: resultado.contexto,
-    minPalabras: resultado.minPalabras,
-    tiempoSugeridoSeg: 180,
+    preguntas,
   };
 }
 
-function construirFaseSimulacion(nivelId: string, resultado: SimulacionGeneradaResult): FaseSimulacion {
+function construirFaseExploracion(temaId: string, escenarios: EscenarioExploracion[]): FaseExploracion {
   return {
-    id: `fase-simulacion-${nivelId}`,
-    tipo: 'simulacion',
-    nivelId,
-    titulo: 'Simulación',
-    instrucciones: 'Interactúa con la simulación para construir intuición antes de la teoría.',
-    completada: false,
-    ordenIndex: 1,
-    categoria: resultado.categoria,
-    formulaLatex: resultado.formulaLatex,
-    configFracciones: resultado.configFracciones,
-    configAlgebra: resultado.configAlgebra,
-    configGeometria: resultado.configGeometria,
-    configEstadistica: resultado.configEstadistica,
-  };
-}
-
-function construirFaseExploracion(nivelId: string, escenarios: EscenarioExploracion[]): FaseExploracion {
-  return {
-    id: `fase-exploracion-${nivelId}`,
+    id: `fase-exploracion-${temaId}`,
     tipo: 'exploracion',
-    nivelId,
+    temaId,
     titulo: 'Exploración',
     instrucciones: 'Analiza cada escenario real y explica tu razonamiento antes de ver la explicación.',
     completada: false,
-    ordenIndex: 2,
+    ordenIndex: 1,
     escenarios,
   };
 }
 
-function construirFaseFormalizacion(nivelId: string, resultado: FormalizacionGeneradaResult): FaseFormalizacion {
+function construirFaseFormalizacion(temaId: string, resultado: FormalizacionGeneradaResult): FaseFormalizacion {
   return {
-    id: `fase-formalizacion-${nivelId}`,
+    id: `fase-formalizacion-${temaId}`,
     tipo: 'formalizacion',
-    nivelId,
+    temaId,
     titulo: 'Formalización',
-    instrucciones: 'Revisa las fórmulas clave de esta sesión.',
+    instrucciones: 'Revisa el concepto formal de esta sesión.',
     completada: false,
-    ordenIndex: 3,
+    ordenIndex: 2,
     resumen: resultado.resumen,
     formulasClave: resultado.formulasClave,
+    analogia: resultado.analogia,
+    grafica: resultado.grafica,
   };
 }
 
 function ExperienciaPage() {
-  const { nivelId } = useParams<{ nivelId: string }>();
+  const { temaId } = useParams<{ temaId: string }>();
   const navigate = useNavigate();
   const inicioRef = useRef(Date.now());
 
   const sesion = useSessionStore((state) => state.sesion);
   const registrarFaseCompletada = useProgressStore((state) => state.registrarFaseCompletada);
-  const guardarPrediccion = useProgressStore((state) => state.guardarPrediccion);
-  const guardarReflexion = useProgressStore((state) => state.guardarReflexion);
-  const registrarTelemetriaSimulacion = useProgressStore((state) => state.registrarTelemetriaSimulacion);
-  const registrarResultadoNivel = useProgressStore((state) => state.registrarResultadoNivel);
+  const guardarPredicciones = useProgressStore((state) => state.guardarPredicciones);
+  const registrarResultadoSesion = useProgressStore((state) => state.registrarResultadoSesion);
   const fasesCompletadas = useProgressStore(
-    (state) => state.fasesCompletadasPorNivel[nivelId ?? ''] ?? [],
+    (state) => state.fasesCompletadasPorTema[temaId ?? ''] ?? [],
   );
 
   const contextoCompleto =
-    Boolean(nivelId) &&
-    Boolean(sesion.areaActualId) &&
-    sesion.gradoNumeroActual !== null &&
-    Boolean(sesion.temaNombreActual) &&
-    Boolean(sesion.dificultadActual);
+    Boolean(temaId) && Boolean(sesion.areaActualId) && Boolean(sesion.temaNombreActual);
 
   useEffect(() => {
     if (!contextoCompleto) navigate('/');
   }, [contextoCompleto, navigate]);
 
-  const { dba, estandares } = useContenidoCurricular(sesion.areaActualId, sesion.gradoNumeroActual);
-
   const parametrosFase: GenerarFaseParams | null = useMemo(() => {
-    if (!contextoCompleto || !sesion.areaActualId || sesion.gradoNumeroActual === null) return null;
+    if (!contextoCompleto || !sesion.areaActualId || !temaId) return null;
     return {
-      temaId: nivelId as string,
+      temaId,
       temaNombre: sesion.temaNombreActual as string,
       areaId: sesion.areaActualId,
-      grado: sesion.gradoNumeroActual,
-      dificultad: sesion.dificultadActual as GenerarFaseParams['dificultad'],
-      dbaTexto: dba?.dba ?? [],
     };
-  }, [contextoCompleto, sesion, nivelId, dba]);
+  }, [contextoCompleto, sesion, temaId]);
 
-  const parametrosNarrativa = useMemo(() => {
-    if (!parametrosFase) return null;
-    return {
-      temaId: parametrosFase.temaId,
-      temaNombre: parametrosFase.temaNombre,
-      areaId: parametrosFase.areaId,
-      grado: parametrosFase.grado,
-      nivelNombre: sesion.dificultadActual ?? '',
-      dificultad: parametrosFase.dificultad,
-      dbaTexto: parametrosFase.dbaTexto,
-      estandarTexto: estandares?.estandares[0]?.enunciado ?? '',
-    };
-  }, [parametrosFase, sesion.dificultadActual, estandares]);
-
-  const narrativa = useNarrativeSlides(parametrosNarrativa);
   const prediccion = usePreguntaPrediccion(parametrosFase);
-  const simulacion = useSimulacionGenerada(parametrosFase);
   const exploracion = useEscenariosExploracion(parametrosFase);
   const formalizacion = useFormalizacionGenerada(parametrosFase);
-  const ejerciciosParams = useMemo(
-    () =>
-      parametrosFase && nivelId
-        ? {
-            nivelId,
-            temaNombre: parametrosFase.temaNombre,
-            areaId: parametrosFase.areaId,
-            dificultad: parametrosFase.dificultad,
-          }
-        : null,
-    [parametrosFase, nivelId],
-  );
-  const ejercicios = useEjerciciosGenerados(ejerciciosParams);
+  const ejercicios = useEjerciciosGenerados(parametrosFase);
 
   const cargandoSiguiente =
-    narrativa.isLoading ||
-    prediccion.isLoading ||
-    simulacion.isLoading ||
-    exploracion.isLoading ||
-    formalizacion.isLoading ||
-    ejercicios.isLoading;
+    prediccion.isLoading || exploracion.isLoading || formalizacion.isLoading || ejercicios.isLoading;
 
   const pasos: PasoDeck[] = useMemo(() => {
-    if (!nivelId) return [];
+    if (!temaId) return [];
     const lista: PasoDeck[] = [];
 
-    (narrativa.data?.slides ?? []).forEach((slide) => {
-      lista.push({ id: slide.id, categoria: 'introduccion', slide });
-    });
     if (prediccion.data) {
       lista.push({
         id: 'paso-prediccion',
         categoria: 'prediccion',
-        fase: construirFasePrediccion(nivelId, prediccion.data),
-      });
-    }
-    if (simulacion.data) {
-      lista.push({
-        id: 'paso-simulacion',
-        categoria: 'simulacion',
-        fase: construirFaseSimulacion(nivelId, simulacion.data),
+        fase: construirFasePrediccion(temaId, prediccion.data.preguntas),
       });
     }
     if (exploracion.data) {
       lista.push({
         id: 'paso-exploracion',
         categoria: 'exploracion',
-        fase: construirFaseExploracion(nivelId, exploracion.data.escenarios),
+        fase: construirFaseExploracion(temaId, exploracion.data.escenarios),
       });
     }
     if (formalizacion.data) {
       lista.push({
         id: 'paso-formalizacion',
         categoria: 'formalizacion',
-        fase: construirFaseFormalizacion(nivelId, formalizacion.data),
+        fase: construirFaseFormalizacion(temaId, formalizacion.data),
       });
     }
     if (ejercicios.data) {
@@ -221,48 +135,33 @@ function ExperienciaPage() {
         id: 'paso-ejercicios',
         categoria: 'ejercicios',
         ejercicios: ejercicios.data.ejercicios,
-        mapaTransferencia: mapaTransferenciaFallback[nivelId] ?? [],
-        preguntasMetacognicion: PREGUNTAS_METACOGNICION,
       });
     }
     return lista;
-  }, [nivelId, narrativa.data, prediccion.data, simulacion.data, exploracion.data, formalizacion.data, ejercicios.data]);
+  }, [temaId, prediccion.data, exploracion.data, formalizacion.data, ejercicios.data]);
 
   const onCompletarPrediccion = useCallback(
-    (texto: string) => {
-      if (!nivelId) return;
-      guardarPrediccion(nivelId, texto);
-      registrarFaseCompletada(nivelId, 'prediccion');
+    (textos: string[]) => {
+      if (!temaId) return;
+      guardarPredicciones(temaId, textos);
+      registrarFaseCompletada(temaId, 'prediccion');
     },
-    [nivelId, guardarPrediccion, registrarFaseCompletada],
-  );
-
-  const onCompletarSimulacion = useCallback(
-    (telemetria: SimulacionTelemetria) => {
-      if (!nivelId) return;
-      registrarTelemetriaSimulacion(telemetria);
-      registrarFaseCompletada(nivelId, 'simulacion');
-    },
-    [nivelId, registrarTelemetriaSimulacion, registrarFaseCompletada],
+    [temaId, guardarPredicciones, registrarFaseCompletada],
   );
 
   const onCompletarExploracion = useCallback(() => {
-    if (!nivelId) return;
-    registrarFaseCompletada(nivelId, 'exploracion');
-  }, [nivelId, registrarFaseCompletada]);
+    if (!temaId) return;
+    registrarFaseCompletada(temaId, 'exploracion');
+  }, [temaId, registrarFaseCompletada]);
 
-  const onCompletarFormalizacion = useCallback(
-    (reflexion: string) => {
-      if (!nivelId) return;
-      guardarReflexion(nivelId, reflexion);
-      registrarFaseCompletada(nivelId, 'formalizacion');
-    },
-    [nivelId, guardarReflexion, registrarFaseCompletada],
-  );
+  const onCompletarFormalizacion = useCallback(() => {
+    if (!temaId) return;
+    registrarFaseCompletada(temaId, 'formalizacion');
+  }, [temaId, registrarFaseCompletada]);
 
   const onCompletarEjercicios = useCallback(
-    (respuestas: RespuestaEjercicio[], metacognicion: MetacognicionRespuesta[]) => {
-      if (!nivelId) return;
+    (respuestas: RespuestaEjercicio[]) => {
+      if (!temaId) return;
       const lista = ejercicios.data?.ejercicios ?? [];
       const puntajeMaximo = lista.reduce((acc, ej) => acc + ej.puntaje, 0);
       const puntajeTotal = lista.reduce((acc, ej) => {
@@ -270,38 +169,37 @@ function ExperienciaPage() {
         return acc + (respuesta?.esCorrecta ? ej.puntaje : 0);
       }, 0);
 
-      registrarResultadoNivel({
-        nivelId,
+      registrarResultadoSesion({
+        temaId,
         puntajeTotal,
         puntajeMaximo,
         porcentaje: puntajeMaximo ? Math.round((puntajeTotal / puntajeMaximo) * 100) : 0,
         respuestas,
         fasesCompletadas,
-        metacognicion,
         fechaCompletado: new Date().toISOString(),
         tiempoTotalMs: Date.now() - inicioRef.current,
       });
     },
-    [nivelId, ejercicios.data, fasesCompletadas, registrarResultadoNivel],
+    [temaId, ejercicios.data, fasesCompletadas, registrarResultadoSesion],
   );
 
   const onCompletadoTotal = useCallback(() => {
-    if (!nivelId) return;
-    navigate(rutas.resultados(nivelId));
-  }, [nivelId, navigate]);
+    if (!temaId) return;
+    navigate(rutas.resultados(temaId));
+  }, [temaId, navigate]);
 
   if (!contextoCompleto) return null;
 
   return (
     <PageTransition className="relative min-h-screen">
       <div className="relative flex items-center justify-between p-4">
-        {narrativa.data && <FuenteContenidoBadge fuente={narrativa.data.fuente} />}
+        {prediccion.data && <FuenteContenidoBadge fuente={prediccion.data.fuente} />}
         <div className="ml-auto">
           <SoundPlayer />
         </div>
       </div>
 
-      {narrativa.isLoading || !narrativa.data ? (
+      {prediccion.isLoading || !prediccion.data ? (
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-6 py-24">
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-40 w-full" />
@@ -310,10 +208,7 @@ function ExperienciaPage() {
         <ExperienciaContinua
           pasos={pasos}
           cargandoSiguiente={cargandoSiguiente}
-          dba={dba?.dba ?? []}
-          dbaFuente={dba?.fuente ?? 'local'}
           onCompletarPrediccion={onCompletarPrediccion}
-          onCompletarSimulacion={onCompletarSimulacion}
           onCompletarExploracion={onCompletarExploracion}
           onCompletarFormalizacion={onCompletarFormalizacion}
           onCompletarEjercicios={onCompletarEjercicios}

@@ -1,62 +1,29 @@
 import { memo, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { AreaId } from '@/types';
-import { temasFallback } from '@/data/temas';
 import { temaSugerenciasFallback } from '@/data/temaSugerencias';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { slugify } from '@/utils/slugify';
 
 interface BuscadorTemaProps {
   areaId: AreaId;
-  gradoId: string;
-  gradoNumero: number;
   onSeleccionar: (temaNombre: string) => void;
 }
 
-interface Sugerencia {
-  texto: string;
-  verificada: boolean;
-}
-
 /**
- * Buscador de tema con autosugerencias (temas curados + semillas por
- * area/grado) y texto libre siempre permitido: el docente puede escribir
- * cualquier tema dentro del alcance de esta area/grado, no esta limitado
- * a la lista.
+ * Buscador de tema con autosugerencias (semillas curadas por area) y texto
+ * libre siempre permitido: el docente puede escribir cualquier tema dentro
+ * del area, no esta limitado a la lista. Sin distincion por grado: el nivel
+ * objetivo de toda la app es fijo (colegio de desempeño superior).
  */
-export const BuscadorTema = memo(function BuscadorTema({
-  areaId,
-  gradoId,
-  gradoNumero,
-  onSeleccionar,
-}: BuscadorTemaProps) {
+export const BuscadorTema = memo(function BuscadorTema({ areaId, onSeleccionar }: BuscadorTemaProps) {
   const [busqueda, setBusqueda] = useState('');
   const busquedaDebounced = useDebouncedValue(busqueda, 200);
 
-  const sugerenciasBase = useMemo<Sugerencia[]>(() => {
-    const vistos = new Set<string>();
-    const lista: Sugerencia[] = [];
-
-    temasFallback
-      .filter((tema) => tema.gradoId === gradoId)
-      .forEach((tema) => {
-        const clave = slugify(tema.nombre);
-        if (vistos.has(clave)) return;
-        vistos.add(clave);
-        lista.push({ texto: tema.nombre, verificada: true });
-      });
-
-    temaSugerenciasFallback
-      .filter((sugerencia) => sugerencia.areaId === areaId && sugerencia.grado === gradoNumero)
-      .forEach((sugerencia) => {
-        const clave = slugify(sugerencia.texto);
-        if (vistos.has(clave)) return;
-        vistos.add(clave);
-        lista.push({ texto: sugerencia.texto, verificada: false });
-      });
-
-    return lista;
-  }, [areaId, gradoId, gradoNumero]);
+  const sugerenciasBase = useMemo(
+    () => temaSugerenciasFallback.filter((sugerencia) => sugerencia.areaId === areaId),
+    [areaId],
+  );
 
   const sugerenciasFiltradas = useMemo(() => {
     const termino = slugify(busquedaDebounced);
@@ -104,11 +71,6 @@ export const BuscadorTema = memo(function BuscadorTema({
             className="flex w-full items-center justify-between gap-2 rounded-lg border border-math-cyan/10 bg-math-navy/40 px-4 py-3 text-left text-sm text-math-white transition-colors hover:border-math-cyan/40"
           >
             <span>{sugerencia.texto}</span>
-            {sugerencia.verificada && (
-              <span className="shrink-0 rounded-full bg-math-cyan/15 px-2 py-0.5 text-[10px] uppercase tracking-wide text-math-cyan">
-                Verificado
-              </span>
-            )}
           </motion.button>
         ))}
 

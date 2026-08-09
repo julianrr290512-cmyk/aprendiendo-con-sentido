@@ -5,10 +5,21 @@ import { requireMethod, responderError } from '../_lib/http.js';
 const ESQUEMA_PREDICCION: GeminiJsonSchema = {
   type: 'object',
   properties: {
-    contexto: { type: 'string' },
-    pregunta: { type: 'string' },
+    preguntas: {
+      type: 'array',
+      minItems: 2,
+      maxItems: 2,
+      items: {
+        type: 'object',
+        properties: {
+          contexto: { type: 'string' },
+          pregunta: { type: 'string' },
+        },
+        required: ['pregunta'],
+      },
+    },
   },
-  required: ['pregunta'],
+  required: ['preguntas'],
 };
 
 interface RequestBody {
@@ -25,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const resultado = await generarJson<{ pregunta: string; contexto?: string }>({
+    const resultado = await generarJson<{ preguntas: unknown[] }>({
       prompt,
       schema: ESQUEMA_PREDICCION,
     });

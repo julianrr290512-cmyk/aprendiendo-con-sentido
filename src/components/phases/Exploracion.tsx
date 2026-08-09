@@ -31,7 +31,7 @@ export const Exploracion = memo(function Exploracion({ fase, onCompletar }: Expl
             Escenario {indiceEscenario + 1} de {fase.escenarios.length}
           </p>
         </div>
-        <EstrellasIndicador nivelId={fase.nivelId} />
+        <EstrellasIndicador temaId={fase.temaId} />
       </CardHeader>
 
       <CardContent>
@@ -39,7 +39,7 @@ export const Exploracion = memo(function Exploracion({ fase, onCompletar }: Expl
           <EscenarioTarjeta
             key={escenario.id}
             escenario={escenario}
-            nivelId={fase.nivelId}
+            temaId={fase.temaId}
             onSiguiente={() => {
               if (esUltimo) onCompletar();
               else setIndiceEscenario((prev) => prev + 1);
@@ -52,9 +52,9 @@ export const Exploracion = memo(function Exploracion({ fase, onCompletar }: Expl
   );
 });
 
-function EstrellasIndicador({ nivelId }: { nivelId: string }) {
+function EstrellasIndicador({ temaId }: { temaId: string }) {
   const estrellas = useProgressStore(
-    (state) => state.estrellasExploracionPorNivel[nivelId] ?? ESTRELLAS_EXPLORACION_INICIALES,
+    (state) => state.estrellasExploracionPorTema[temaId] ?? ESTRELLAS_EXPLORACION_INICIALES,
   );
   return (
     <div className="flex shrink-0 gap-0.5 text-lg" title={`${estrellas} de ${ESTRELLAS_EXPLORACION_INICIALES} estrellas`}>
@@ -69,12 +69,12 @@ function EstrellasIndicador({ nivelId }: { nivelId: string }) {
 
 interface EscenarioTarjetaProps {
   escenario: FaseExploracion['escenarios'][number];
-  nivelId: string;
+  temaId: string;
   onSiguiente: () => void;
   esUltimo: boolean;
 }
 
-function EscenarioTarjeta({ escenario, nivelId, onSiguiente, esUltimo }: EscenarioTarjetaProps) {
+function EscenarioTarjeta({ escenario, temaId, onSiguiente, esUltimo }: EscenarioTarjetaProps) {
   const [respuesta, setRespuesta] = useState('');
   const [nivelPista, setNivelPista] = useState(0);
   const [mostrarExplicacion, setMostrarExplicacion] = useState(false);
@@ -95,9 +95,9 @@ function EscenarioTarjeta({ escenario, nivelId, onSiguiente, esUltimo }: Escenar
   const pedirPista = useCallback(() => {
     if (nivelPista >= 3) return;
     setNivelPista((prev) => prev + 1);
-    descontarEstrella(nivelId);
+    descontarEstrella(temaId);
     reproducir('tension');
-  }, [nivelPista, descontarEstrella, nivelId, reproducir]);
+  }, [nivelPista, descontarEstrella, temaId, reproducir]);
 
   const revelarExplicacion = useCallback(() => {
     setMostrarExplicacion(true);

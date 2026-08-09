@@ -3,14 +3,12 @@ import type { FuenteContenido } from '@/types';
 import { Badge, type BadgeVariant } from './Badge';
 
 const ETIQUETAS: Record<FuenteContenido, string> = {
-  api: 'Contenido oficial MEN',
-  web: 'Contenido oficial MEN',
+  api: 'Generado por IA',
   local: 'Contenido base',
 };
 
 const VARIANTES: Record<FuenteContenido, BadgeVariant> = {
   api: 'success',
-  web: 'success',
   local: 'default',
 };
 
@@ -29,7 +27,7 @@ export const FuenteContenidoBadge = memo(function FuenteContenidoBadge({
       className={className}
       title={
         fuente === 'local'
-          ? 'No se pudo confirmar contenido en vivo del MEN; se muestra el set de datos local incluido en la app.'
+          ? 'No se pudo conectar con la IA; se muestra contenido base incluido en la app.'
           : undefined
       }
     >

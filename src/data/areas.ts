@@ -7,7 +7,6 @@ export const areasFallback: Area[] = [
     descripcion: 'Pensamiento numerico y variacional',
     icono: 'sigma',
     color: '#6366f1',
-    gradosDisponibles: [8, 9, 10, 11],
   },
   {
     id: 'fisica',
@@ -15,6 +14,5 @@ export const areasFallback: Area[] = [
     descripcion: 'Movimiento, fuerzas, energia y luz',
     icono: 'atom',
     color: '#f97316',
-    gradosDisponibles: [9, 10, 11],
   },
 ];

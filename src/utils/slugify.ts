@@ -1,4 +1,4 @@
-import type { AreaId, Nivel } from '@/types';
+import type { AreaId } from '@/types';
 
 const MARCAS_DIACRITICAS = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']', 'g');
 
@@ -14,7 +14,6 @@ export function slugify(texto: string): string {
 
 interface ConstruirTemaIdParams {
   areaId: AreaId;
-  grado: number;
   temaNombre: string;
 }
 
@@ -23,10 +22,6 @@ interface ConstruirTemaIdParams {
  * nombre normalizado siempre produce el mismo id, lo que reusa cache y
  * fallback local sin necesitar un catalogo pre-registrado.
  */
-export function construirTemaId({ areaId, grado, temaNombre }: ConstruirTemaIdParams): string {
-  return `${areaId}-${grado}-${slugify(temaNombre) || 'tema'}`;
-}
-
-export function construirNivelId(temaId: string, dificultad: Nivel['dificultad']): string {
-  return `${temaId}--${dificultad}`;
+export function construirTemaId({ areaId, temaNombre }: ConstruirTemaIdParams): string {
+  return `${areaId}-${slugify(temaNombre) || 'tema'}`;
 }

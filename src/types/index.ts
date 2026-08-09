@@ -1,14 +1,8 @@
 // ---------------------------------------------------------------------------
-// Dominio curricular: Area > Grado > Tema > Nivel > Presentacion > Fases > Ejercicios
+// Dominio curricular: Area > Tema > Fases > Ejercicios
 // ---------------------------------------------------------------------------
 
-export type AreaId =
-  | 'matematicas'
-  | 'geometria'
-  | 'estadistica'
-  | 'algebra'
-  | 'calculo'
-  | 'fisica';
+export type AreaId = 'matematicas' | 'fisica';
 
 export interface Area {
   id: AreaId;
@@ -16,173 +10,51 @@ export interface Area {
   descripcion: string;
   icono: string;
   color: string;
-  gradosDisponibles: number[];
-}
-
-export interface Grado {
-  id: string;
-  numero: number;
-  nombre: string;
-  areaId: AreaId;
-  temasIds: string[];
 }
 
 export interface Tema {
   id: string;
   nombre: string;
-  descripcion: string;
-  gradoId: string;
-  areaId: AreaId;
-  dbaIds: string[];
-  estandarIds: string[];
-  nivelesIds: string[];
-  duracionEstimadaMin: number;
-}
-
-export interface Nivel {
-  id: string;
-  numero: number;
-  nombre: string;
-  temaId: string;
-  dificultad: 'introductorio' | 'intermedio' | 'avanzado';
-  objetivos: string[];
-  presentacionId: string;
-}
-
-// ---------------------------------------------------------------------------
-// Contenido oficial: DBA y Estandares
-// ---------------------------------------------------------------------------
-
-export interface DBA {
-  id: string;
-  codigo: string;
-  enunciado: string;
-  grado: number;
-  areaId: AreaId;
-  evidenciasAprendizaje: string[];
-}
-
-export interface Estandar {
-  id: string;
-  codigo: string;
-  enunciado: string;
-  grupoGrados: string;
-  componente: 'numerico-variacional' | 'geometrico-metrico' | 'aleatorio';
   areaId: AreaId;
 }
 
 // ---------------------------------------------------------------------------
-// Presentacion narrativa
+// Fases pedagogicas (predicción, exploración, formalización)
 // ---------------------------------------------------------------------------
 
-export interface Presentacion {
-  id: string;
-  nivelId: string;
-  titulo: string;
-  narrativa: NarrativeBeat[];
-  personajeGuia?: string;
-  sonidoAmbienteId?: string;
-}
-
-export interface NarrativeBeat {
-  id: string;
-  tipo: 'dialogo' | 'escena' | 'pregunta' | 'transicion';
-  texto: string;
-  duracionMs: number;
-  animacionId?: string;
-  sonidoId?: string;
-}
-
-// ---------------------------------------------------------------------------
-// Fases pedagogicas (ciclo POE: Prediccion, Simulacion, Exploracion, Formalizacion)
-// ---------------------------------------------------------------------------
-
-export type FaseTipo =
-  | 'prediccion'
-  | 'simulacion'
-  | 'exploracion'
-  | 'formalizacion';
+export type FaseTipo = 'prediccion' | 'exploracion' | 'formalizacion';
 
 export interface Fase {
   id: string;
   tipo: FaseTipo;
-  nivelId: string;
+  temaId: string;
   titulo: string;
   instrucciones: string;
   completada: boolean;
   ordenIndex: number;
 }
 
-/**
- * Pregunta de prediccion abierta (taxonomia de Bloom niveles 4-6: analisis,
- * evaluacion, creacion). No hay opciones de seleccion: el estudiante escribe
- * su hipotesis en texto libre antes de ver ningun contenido formal.
- */
-export interface FasePrediccion extends Fase {
-  tipo: 'prediccion';
+/** Una pregunta individual de predicción, en texto libre. */
+export interface PreguntaItem {
   pregunta: string;
   /** Frase de contexto opcional que antecede la pregunta. */
   contexto?: string;
   minPalabras: number;
-  /** Tiempo sugerido en segundos: solo informativo, nunca bloquea el avance. */
-  tiempoSugeridoSeg?: number;
-}
-
-export type CategoriaSimulacion = 'fracciones' | 'algebra' | 'geometria' | 'estadistica';
-
-export interface SimulacionFraccionesConfig {
-  numeroPartes: number;
-  formaBase: 'barra' | 'circulo';
-}
-
-export interface TerminoBalanza {
-  id: string;
-  etiqueta: string;
-  simboloLatex: string;
-  valor: number;
-}
-
-export interface SimulacionAlgebraConfig {
-  terminosDisponibles: TerminoBalanza[];
-}
-
-export interface SimulacionGeometriaConfig {
-  instrucciones: string;
-}
-
-export interface SimulacionEstadisticaConfig {
-  etiquetaDataset: string;
-  unidad: string;
-  categorias: string[];
-  valores: number[];
 }
 
 /**
- * El widget interactivo se elige por `categoria` (un switch en SimulacionPhase),
- * no por area curricular: una misma area puede necesitar distintos widgets.
+ * Fase de predicción (taxonomia de Bloom niveles 4-6: analisis, evaluacion,
+ * creacion). Sin opciones de seleccion: el estudiante escribe su hipotesis
+ * en texto libre antes de ver ningun contenido formal. Siempre 2 preguntas.
  */
-export interface FaseSimulacion extends Fase {
-  tipo: 'simulacion';
-  categoria: CategoriaSimulacion;
-  formulaLatex?: string;
-  configFracciones?: SimulacionFraccionesConfig;
-  configAlgebra?: SimulacionAlgebraConfig;
-  configGeometria?: SimulacionGeometriaConfig;
-  configEstadistica?: SimulacionEstadisticaConfig;
-}
-
-/** Registro telemetrico de una sesion de simulacion (tiempo, intentos, acciones). */
-export interface SimulacionTelemetria {
-  nivelId: string;
-  categoria: CategoriaSimulacion;
-  tiempoMs: number;
-  intentos: number;
-  acciones: string[];
+export interface FasePrediccion extends Fase {
+  tipo: 'prediccion';
+  preguntas: PreguntaItem[];
 }
 
 export interface EscenarioExploracion {
   id: string;
-  /** Contexto real colombiano (tienda de barrio, transporte, deporte, etc.). */
+  /** Contexto real, cercano a la vida de un estudiante. */
   contexto: string;
   pregunta: string;
   explicacion: string;
@@ -191,15 +63,30 @@ export interface EscenarioExploracion {
   tiempoLimiteSeg: number;
 }
 
+/** Fase de exploración: siempre 2 escenarios. */
 export interface FaseExploracion extends Fase {
   tipo: 'exploracion';
   escenarios: EscenarioExploracion[];
 }
 
+/** Grafica de una funcion de una variable, evaluada de forma segura (sin eval/Function). */
+export interface GraficaFuncion {
+  /** Expresion matematica en variable "x" (ej. "x^2", "sin(x)"). */
+  expresion: string;
+  rangoX: [number, number];
+  titulo?: string;
+  etiquetaX?: string;
+  etiquetaY?: string;
+}
+
 export interface FaseFormalizacion extends Fase {
   tipo: 'formalizacion';
-  formulasClave: FormulaClave[];
   resumen: string;
+  formulasClave: FormulaClave[];
+  /** Analogia con la vida real de un estudiante. */
+  analogia: string;
+  /** Solo presente cuando el concepto se beneficia de una representacion grafica. */
+  grafica?: GraficaFuncion;
 }
 
 export interface FormulaClave {
@@ -213,16 +100,21 @@ export interface FormulaClave {
 // Ejercicios y transferencia
 // ---------------------------------------------------------------------------
 
-export type EjercicioTipo =
-  | 'opcion-multiple'
-  | 'respuesta-abierta'
-  | 'arrastrar-soltar'
-  | 'formula';
+export type EjercicioTipo = 'opcion-multiple' | 'respuesta-abierta' | 'formula';
+
+/**
+ * Niveles de la taxonomia de Bloom que cubren los 5 ejercicios de cada
+ * sesion, en orden ascendente de exigencia cognitiva.
+ */
+export type NivelBloom = 'comprender' | 'aplicar' | 'analizar' | 'evaluar' | 'crear';
 
 export interface Ejercicio {
   id: string;
-  nivelId: string;
+  temaId: string;
   tipo: EjercicioTipo;
+  nivelBloom: NivelBloom;
+  /** true en los ejercicios finales que transfieren el concepto a otro contexto. */
+  esTransferencia: boolean;
   enunciado: string;
   enunciadoLatex?: string;
   opciones?: OpcionEjercicio[];
@@ -246,41 +138,19 @@ export interface RespuestaEjercicio {
   intentos: number;
 }
 
-export interface MapaTransferenciaItem {
-  id: string;
-  concepto: string;
-  contextoOrigen: string;
-  contextoDestino: string;
-  conexion: string;
-}
-
-export interface MetacognicionRespuesta {
-  pregunta: string;
-  respuesta: string;
-  nivelConfianza: 1 | 2 | 3 | 4 | 5;
-}
-
 // ---------------------------------------------------------------------------
 // Resultados y progreso
 // ---------------------------------------------------------------------------
 
-export interface ResultadoNivel {
-  nivelId: string;
+export interface ResultadoSesion {
+  temaId: string;
   puntajeTotal: number;
   puntajeMaximo: number;
   porcentaje: number;
   respuestas: RespuestaEjercicio[];
   fasesCompletadas: FaseTipo[];
-  metacognicion: MetacognicionRespuesta[];
   fechaCompletado: string;
   tiempoTotalMs: number;
-}
-
-export interface ProgresoTema {
-  temaId: string;
-  nivelesCompletados: string[];
-  nivelActualId: string | null;
-  porcentajeAvance: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -291,60 +161,24 @@ export interface SesionUsuario {
   id: string;
   nombre: string;
   areaActualId: AreaId | null;
-  gradoActualId: string | null;
+  /** Id determinista (area + slug del tema) del tema elegido. */
   temaActualId: string | null;
-  nivelActualId: string | null;
-  /** Numero del grado (8-11 matematicas, 9-11 fisica) del tema elegido. */
-  gradoNumeroActual: number | null;
-  /** Nombre legible del tema elegido (libre o sugerido), no siempre existe como Tema hardcodeado. */
+  /** Nombre legible del tema elegido (siempre texto libre del docente). */
   temaNombreActual: string | null;
-  dificultadActual: Nivel['dificultad'] | null;
   sonidoHabilitado: boolean;
-  /** Volumen global (0-1) para los sonidos sintetizados de la narrativa. */
+  /** Volumen global (0-1) para los sonidos sintetizados de feedback. */
   volumen: number;
   fechaInicio: string;
 }
 
 // ---------------------------------------------------------------------------
-// Narrativa tipo mini-documental (slides): motor de presentacion, animador
-// de formulas y analogias del mundo real.
+// Contenido generado por IA para las fases, con cascada cache/api/local.
 // ---------------------------------------------------------------------------
 
-export type SlideTipo = 'historia' | 'formula' | 'analogia' | 'pregunta' | 'revelacion';
-
-export type SlideSonido = 'intro' | 'tension' | 'descubrimiento' | 'logro';
-
-export interface SlideNarrativo {
-  id: string;
-  tipo: SlideTipo;
-  titulo: string;
-  /** Puede incluir sintaxis KaTeX inline delimitada por $...$. */
-  contenido: string;
-  /** URL de imagen matematica abstracta para el fondo del slide. */
-  imagenFondo?: string;
-  /** Formula KaTeX grande y centrada, propia de slides tipo 'formula'. */
-  formulaDestacada?: string;
-  sonido?: SlideSonido;
-  /** Duracion en ms para el avance automatico (autoplay). */
-  duracionAuto?: number;
-}
-
-export interface NarrativeSlidesResult {
-  slides: SlideNarrativo[];
-  fuente: FuenteContenido;
-  temaId: string;
-}
-
-// ---------------------------------------------------------------------------
-// Contenido pedagogico generado por IA para las fases (pregunta de prediccion
-// profunda + escenarios de exploracion), con la misma cascada cache/api/local
-// que el resto del contenido curricular.
-// ---------------------------------------------------------------------------
+export type FuenteContenido = 'api' | 'local';
 
 export interface PreguntaPrediccionResult {
-  pregunta: string;
-  contexto?: string;
-  minPalabras: number;
+  preguntas: PreguntaItem[];
   fuente: FuenteContenido;
 }
 
@@ -353,51 +187,25 @@ export interface EscenariosExploracionResult {
   fuente: FuenteContenido;
 }
 
-// ---------------------------------------------------------------------------
-// Contenido generado por IA para Simulacion y Formalizacion, misma cascada
-// cache/api/local que prediccion/exploracion/narrativa.
-// ---------------------------------------------------------------------------
-
-export interface SimulacionGeneradaResult {
-  categoria: CategoriaSimulacion;
-  formulaLatex?: string;
-  configFracciones?: SimulacionFraccionesConfig;
-  configAlgebra?: SimulacionAlgebraConfig;
-  configGeometria?: SimulacionGeometriaConfig;
-  configEstadistica?: SimulacionEstadisticaConfig;
-  fuente: FuenteContenido;
-}
-
 export interface FormalizacionGeneradaResult {
   resumen: string;
   formulasClave: FormulaClave[];
+  analogia: string;
+  grafica?: GraficaFuncion;
   fuente: FuenteContenido;
 }
 
 // ---------------------------------------------------------------------------
-// Deck continuo: une la intro narrativa y las 5 fases pedagogicas en una sola
-// lista de pasos con un indice compartido (experiencia tipo presentacion
-// interactiva), en vez de paginas/rutas separadas por fase.
+// Deck continuo: une las 4 fases pedagogicas en una sola lista de pasos con
+// un indice compartido (experiencia tipo presentacion interactiva).
 // ---------------------------------------------------------------------------
 
-export type CategoriaPasoDeck = 'introduccion' | FaseTipo | 'ejercicios';
-
-export interface PasoDeckSlide {
-  id: string;
-  categoria: 'introduccion';
-  slide: SlideNarrativo;
-}
+export type CategoriaPasoDeck = FaseTipo | 'ejercicios';
 
 export interface PasoDeckPrediccion {
   id: string;
   categoria: 'prediccion';
   fase: FasePrediccion;
-}
-
-export interface PasoDeckSimulacion {
-  id: string;
-  categoria: 'simulacion';
-  fase: FaseSimulacion;
 }
 
 export interface PasoDeckExploracion {
@@ -416,14 +224,10 @@ export interface PasoDeckEjercicios {
   id: string;
   categoria: 'ejercicios';
   ejercicios: Ejercicio[];
-  mapaTransferencia: MapaTransferenciaItem[];
-  preguntasMetacognicion: string[];
 }
 
 export type PasoDeck =
-  | PasoDeckSlide
   | PasoDeckPrediccion
-  | PasoDeckSimulacion
   | PasoDeckExploracion
   | PasoDeckFormalizacion
   | PasoDeckEjercicios;
@@ -436,16 +240,6 @@ export interface ApiResponse<T> {
   data: T;
   fuente: 'api' | 'fallback-local';
   timestamp: string;
-}
-
-export interface AiGenerarEjercicioRequest {
-  temaId: string;
-  dificultad: Nivel['dificultad'];
-  cantidad: number;
-}
-
-export interface AiGenerarEjercicioResponse {
-  ejercicios: Ejercicio[];
 }
 
 // ---------------------------------------------------------------------------
@@ -463,33 +257,4 @@ export interface AnalyticsEvent {
   nombre: string;
   propiedades?: Record<string, string | number | boolean>;
   timestamp: string;
-}
-
-// ---------------------------------------------------------------------------
-// Cascada de contenido curricular (DBA / Estandares): api -> web -> local
-// ---------------------------------------------------------------------------
-
-export type FuenteContenido = 'api' | 'web' | 'local';
-
-export interface DBAResult {
-  dba: string[];
-  fuente: FuenteContenido;
-  grado: number;
-  area: AreaId;
-  anio: number;
-}
-
-export interface EstandarBC {
-  enunciado: string;
-  pensamiento: string;
-  grupoGrados: string;
-}
-
-export interface EstandaresResult {
-  estandares: EstandarBC[];
-  pensamientos: string[];
-  competencias: string[];
-  fuente: FuenteContenido;
-  grupoGrados: string;
-  area: AreaId;
 }

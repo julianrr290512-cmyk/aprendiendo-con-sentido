@@ -8,8 +8,6 @@ import { routeComponents } from './routes';
 const {
   inicio: Inicio,
   area: Area,
-  grado: Grado,
-  tema: Tema,
   experiencia: Experiencia,
   resultados: Resultados,
 } = routeComponents;
@@ -30,10 +28,8 @@ export function AppRoutes() {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<Inicio />} />
             <Route path="/area/:areaId" element={<Area />} />
-            <Route path="/area/:areaId/grado/:gradoId" element={<Grado />} />
-            <Route path="/area/:areaId/grado/:gradoId/tema/:temaId" element={<Tema />} />
-            <Route path="/experiencia/:nivelId" element={<Experiencia />} />
-            <Route path="/nivel/:nivelId/resultados" element={<Resultados />} />
+            <Route path="/experiencia/:temaId" element={<Experiencia />} />
+            <Route path="/resultados/:temaId" element={<Resultados />} />
           </Routes>
         </AnimatePresence>
       </Suspense>

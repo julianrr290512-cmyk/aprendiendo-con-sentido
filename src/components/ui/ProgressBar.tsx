@@ -16,9 +16,7 @@ interface ConfigFase {
 }
 
 const FASES_CONFIG: Record<CategoriaPasoDeck, ConfigFase> = {
-  introduccion: { etiqueta: 'Introducción', icono: '🎬' },
   prediccion: { etiqueta: 'Predicción', icono: '🔮' },
-  simulacion: { etiqueta: 'Simulación', icono: '🧪' },
   exploracion: { etiqueta: 'Exploración', icono: '🧭' },
   formalizacion: { etiqueta: 'Formalización', icono: '📐' },
   ejercicios: { etiqueta: 'Ejercicios', icono: '✏️' },
@@ -42,9 +40,10 @@ interface ProgressBarProps {
 }
 
 /**
- * Barra de progreso segmentada por los pasos del deck (introduccion, ciclo POE,
- * ejercicios), con relleno cyan->gold entre segmentos completados, porcentaje
- * flotante sobre el paso activo y tooltip por segmento al hover.
+ * Barra de progreso segmentada por los pasos del deck (prediccion,
+ * exploracion, formalizacion, ejercicios), con relleno cyan->gold entre
+ * segmentos completados, porcentaje flotante sobre el paso activo y tooltip
+ * por segmento al hover.
  */
 export const ProgressBar = memo(function ProgressBar({ fases, className }: ProgressBarProps) {
   const completadas = fases.filter((fase) => fase.estado === 'completada').length;

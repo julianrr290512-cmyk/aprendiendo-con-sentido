@@ -6,6 +6,7 @@ const ESQUEMA_FORMALIZACION: GeminiJsonSchema = {
   type: 'object',
   properties: {
     resumen: { type: 'string' },
+    analogia: { type: 'string' },
     formulasClave: {
       type: 'array',
       minItems: 1,
@@ -21,8 +22,24 @@ const ESQUEMA_FORMALIZACION: GeminiJsonSchema = {
         required: ['id', 'nombre', 'latex', 'explicacion'],
       },
     },
+    grafica: {
+      type: 'object',
+      properties: {
+        expresion: { type: 'string' },
+        rangoX: {
+          type: 'array',
+          minItems: 2,
+          maxItems: 2,
+          items: { type: 'number' },
+        },
+        titulo: { type: 'string' },
+        etiquetaX: { type: 'string' },
+        etiquetaY: { type: 'string' },
+      },
+      required: ['expresion', 'rangoX'],
+    },
   },
-  required: ['resumen', 'formulasClave'],
+  required: ['resumen', 'analogia', 'formulasClave'],
 };
 
 interface RequestBody {
