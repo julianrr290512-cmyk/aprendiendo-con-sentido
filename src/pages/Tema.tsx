@@ -1,15 +1,15 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAreas, useGradosPorArea, useNivelesPorTema, useTemasPorGrado } from '@/hooks/useContent';
+import { useAreas, useGradosPorArea } from '@/hooks/useContent';
 import { useNavigation } from '@/hooks/useNavigation';
 import { useSessionStore } from '@/store/sessionStore';
 import { PageTransition } from '@/components/PageTransition';
 import { SelectionHeader } from '@/components/navigation/SelectionHeader';
 import { NivelPortal } from '@/components/selection/NivelPortal';
 import type { NivelTier } from '@/components/selection/nivelPortalConfig';
-import { Skeleton } from '@/components/ui/Skeleton';
 import { rutas } from '@/router/routes';
+import { construirNivelId } from '@/utils/slugify';
 import type { Nivel } from '@/types';
 
 const TIERS: NivelTier[] = ['introductorio', 'intermedio', 'avanzado'];
@@ -17,25 +17,37 @@ const DEMORA_NAVEGACION_MS = 500;
 
 function TemaPage() {
   const { areaId, gradoId, temaId } = useParams<{ areaId: string; gradoId: string; temaId: string }>();
+  const navigate = useNavigate();
   const { data: areasData } = useAreas();
   const { data: gradosData } = useGradosPorArea(areaId ?? null);
-  const { data: temasData } = useTemasPorGrado(gradoId ?? null);
-  const { data, isLoading } = useNivelesPorTema(temaId ?? null);
   const { navegarA } = useNavigation();
-  const setNivel = useSessionStore((state) => state.setNivel);
+  const sesion = useSessionStore((state) => state.sesion);
+  const confirmarTema = useSessionStore((state) => state.confirmarTema);
 
   const area = useMemo(() => areasData?.data.find((a) => a.id === areaId), [areasData, areaId]);
   const grado = useMemo(() => gradosData?.data.find((g) => g.id === gradoId), [gradosData, gradoId]);
-  const tema = useMemo(() => temasData?.data.find((t) => t.id === temaId), [temasData, temaId]);
-  const niveles = useMemo(() => data?.data ?? [], [data]);
+  const temaNombre = sesion.temaActualId === temaId ? sesion.temaNombreActual : null;
 
-  const nivelPorTier = useMemo(() => {
+  useEffect(() => {
+    if (!temaId || !temaNombre) navigate(rutas.grado(areaId ?? '', gradoId ?? ''));
+  }, [temaId, temaNombre, areaId, gradoId, navigate]);
+
+  const nivelesPorTier = useMemo<Partial<Record<NivelTier, Nivel>>>(() => {
+    if (!temaId || !temaNombre) return {};
     const mapa: Partial<Record<NivelTier, Nivel>> = {};
-    for (const nivel of niveles) {
-      mapa[nivel.dificultad] ??= nivel;
-    }
+    TIERS.forEach((tier) => {
+      mapa[tier] = {
+        id: construirNivelId(temaId, tier),
+        numero: 1,
+        nombre: temaNombre,
+        temaId,
+        dificultad: tier,
+        objetivos: [],
+        presentacionId: '',
+      };
+    });
     return mapa;
-  }, [niveles]);
+  }, [temaId, temaNombre]);
 
   const [portalActivo, setPortalActivo] = useState<string | null>(null);
   const navegacionTimer = useRef<number | undefined>(undefined);
@@ -44,14 +56,19 @@ function TemaPage() {
 
   const entrarAlPortal = useCallback(
     (nivel: Nivel) => {
-      if (portalActivo) return;
+      if (portalActivo || !temaNombre) return;
       setPortalActivo(nivel.id);
-      setNivel(nivel.id);
+      confirmarTema({
+        temaId: nivel.temaId,
+        temaNombre,
+        dificultad: nivel.dificultad,
+        nivelId: nivel.id,
+      });
       navegacionTimer.current = window.setTimeout(() => {
-        navegarA('nivel', rutas.nivel(temaId ?? '', nivel.id));
+        navegarA('experiencia', rutas.experiencia(nivel.id));
       }, DEMORA_NAVEGACION_MS);
     },
-    [navegarA, portalActivo, setNivel, temaId],
+    [portalActivo, temaNombre, confirmarTema, navegarA],
   );
 
   return (
@@ -62,7 +79,7 @@ function TemaPage() {
           { label: 'Inicio', to: '/' },
           { label: area?.nombre ?? 'Área', to: `/area/${areaId}` },
           { label: grado ? `Grado ${grado.numero}°` : 'Grado', to: `/area/${areaId}/grado/${gradoId}` },
-          { label: tema?.nombre ?? 'Tema' },
+          { label: temaNombre ?? 'Tema' },
         ]}
       />
 
@@ -72,34 +89,33 @@ function TemaPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
       >
-        Elige tu nivel
+        Elige el nivel de profundidad
       </motion.h1>
       <p className="mt-2 text-center text-math-silver">
-        Cada portal te lleva a un desafío con dificultad distinta. Avanza a tu propio ritmo.
+        {temaNombre ? `Para "${temaNombre}". ` : ''}
+        Cada portal genera una ruta pedagógica completa con dificultad distinta.
       </p>
 
       <div className="mt-12 grid gap-6 sm:grid-cols-3">
-        {isLoading
-          ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-2xl" />)
-          : TIERS.map((tier, indice) => {
-              const nivel = nivelPorTier[tier];
-              const estado: 'idle' | 'entrando' | 'desvanecido' = !portalActivo
-                ? 'idle'
-                : nivel && portalActivo === nivel.id
-                  ? 'entrando'
-                  : 'desvanecido';
+        {TIERS.map((tier, indice) => {
+          const nivel = nivelesPorTier[tier];
+          const estado: 'idle' | 'entrando' | 'desvanecido' = !portalActivo
+            ? 'idle'
+            : nivel && portalActivo === nivel.id
+              ? 'entrando'
+              : 'desvanecido';
 
-              return (
-                <NivelPortal
-                  key={tier}
-                  tier={tier}
-                  nivel={nivel}
-                  estado={estado}
-                  index={indice}
-                  onEnter={entrarAlPortal}
-                />
-              );
-            })}
+          return (
+            <NivelPortal
+              key={tier}
+              tier={tier}
+              nivel={nivel}
+              estado={estado}
+              index={indice}
+              onEnter={entrarAlPortal}
+            />
+          );
+        })}
       </div>
     </PageTransition>
   );

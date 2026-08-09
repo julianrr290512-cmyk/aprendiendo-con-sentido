@@ -92,7 +92,6 @@ async function solicitarSlidesRemoto(params: GenerarNarrativaParams): Promise<Sl
 
 function generarSlidesLocalFallback(params: GenerarNarrativaParams): SlideNarrativo[] {
   const nivel = ETIQUETA_NIVEL[params.dificultad];
-  const primerDba = params.dbaTexto[0] ?? `comprender ${params.temaNombre.toLowerCase()}`;
 
   return [
     {
@@ -113,9 +112,8 @@ function generarSlidesLocalFallback(params: GenerarNarrativaParams): SlideNarrat
     {
       id: 'local-3-formula',
       tipo: 'formula',
-      titulo: 'La herramienta clave',
-      contenido: 'Esta es la relacion matematica que vamos a construir paso a paso.',
-      formulaDestacada: 'x^2+2x+1=(x+1)^2',
+      titulo: 'Así se ve una relación matemática',
+      contenido: `Este es un ejemplo de como se arma una formula paso a paso. La formula real de ${params.temaNombre} la vas a construir en la fase de formalizacion.`,
       sonido: 'descubrimiento',
       duracionAuto: 5200,
     },
@@ -123,7 +121,7 @@ function generarSlidesLocalFallback(params: GenerarNarrativaParams): SlideNarrat
       id: 'local-4-pregunta',
       tipo: 'pregunta',
       titulo: '¿Qué opinas?',
-      contenido: `Antes de seguir: ¿como crees que se relaciona esto con ${primerDba}?`,
+      contenido: `Antes de seguir: ¿en que situacion de tu vida diaria crees que aparece ${params.temaNombre.toLowerCase()}?`,
     },
     {
       id: 'local-5-revelacion',

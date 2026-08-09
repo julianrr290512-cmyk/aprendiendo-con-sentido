@@ -10,10 +10,7 @@ const {
   area: Area,
   grado: Grado,
   tema: Tema,
-  nivel: Nivel,
-  presentacion: Presentacion,
-  fases: Fases,
-  ejercicios: Ejercicios,
+  experiencia: Experiencia,
   resultados: Resultados,
 } = routeComponents;
 
@@ -35,10 +32,7 @@ export function AppRoutes() {
             <Route path="/area/:areaId" element={<Area />} />
             <Route path="/area/:areaId/grado/:gradoId" element={<Grado />} />
             <Route path="/area/:areaId/grado/:gradoId/tema/:temaId" element={<Tema />} />
-            <Route path="/tema/:temaId/nivel/:nivelId" element={<Nivel />} />
-            <Route path="/nivel/:nivelId/presentacion" element={<Presentacion />} />
-            <Route path="/nivel/:nivelId/fases" element={<Fases />} />
-            <Route path="/nivel/:nivelId/ejercicios" element={<Ejercicios />} />
+            <Route path="/experiencia/:nivelId" element={<Experiencia />} />
             <Route path="/nivel/:nivelId/resultados" element={<Resultados />} />
           </Routes>
         </AnimatePresence>

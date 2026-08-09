@@ -294,6 +294,11 @@ export interface SesionUsuario {
   gradoActualId: string | null;
   temaActualId: string | null;
   nivelActualId: string | null;
+  /** Numero del grado (8-11 matematicas, 9-11 fisica) del tema elegido. */
+  gradoNumeroActual: number | null;
+  /** Nombre legible del tema elegido (libre o sugerido), no siempre existe como Tema hardcodeado. */
+  temaNombreActual: string | null;
+  dificultadActual: Nivel['dificultad'] | null;
   sonidoHabilitado: boolean;
   /** Volumen global (0-1) para los sonidos sintetizados de la narrativa. */
   volumen: number;
@@ -347,6 +352,81 @@ export interface EscenariosExploracionResult {
   escenarios: EscenarioExploracion[];
   fuente: FuenteContenido;
 }
+
+// ---------------------------------------------------------------------------
+// Contenido generado por IA para Simulacion y Formalizacion, misma cascada
+// cache/api/local que prediccion/exploracion/narrativa.
+// ---------------------------------------------------------------------------
+
+export interface SimulacionGeneradaResult {
+  categoria: CategoriaSimulacion;
+  formulaLatex?: string;
+  configFracciones?: SimulacionFraccionesConfig;
+  configAlgebra?: SimulacionAlgebraConfig;
+  configGeometria?: SimulacionGeometriaConfig;
+  configEstadistica?: SimulacionEstadisticaConfig;
+  fuente: FuenteContenido;
+}
+
+export interface FormalizacionGeneradaResult {
+  resumen: string;
+  formulasClave: FormulaClave[];
+  fuente: FuenteContenido;
+}
+
+// ---------------------------------------------------------------------------
+// Deck continuo: une la intro narrativa y las 5 fases pedagogicas en una sola
+// lista de pasos con un indice compartido (experiencia tipo presentacion
+// interactiva), en vez de paginas/rutas separadas por fase.
+// ---------------------------------------------------------------------------
+
+export type CategoriaPasoDeck = 'introduccion' | FaseTipo | 'ejercicios';
+
+export interface PasoDeckSlide {
+  id: string;
+  categoria: 'introduccion';
+  slide: SlideNarrativo;
+}
+
+export interface PasoDeckPrediccion {
+  id: string;
+  categoria: 'prediccion';
+  fase: FasePrediccion;
+}
+
+export interface PasoDeckSimulacion {
+  id: string;
+  categoria: 'simulacion';
+  fase: FaseSimulacion;
+}
+
+export interface PasoDeckExploracion {
+  id: string;
+  categoria: 'exploracion';
+  fase: FaseExploracion;
+}
+
+export interface PasoDeckFormalizacion {
+  id: string;
+  categoria: 'formalizacion';
+  fase: FaseFormalizacion;
+}
+
+export interface PasoDeckEjercicios {
+  id: string;
+  categoria: 'ejercicios';
+  ejercicios: Ejercicio[];
+  mapaTransferencia: MapaTransferenciaItem[];
+  preguntasMetacognicion: string[];
+}
+
+export type PasoDeck =
+  | PasoDeckSlide
+  | PasoDeckPrediccion
+  | PasoDeckSimulacion
+  | PasoDeckExploracion
+  | PasoDeckFormalizacion
+  | PasoDeckEjercicios;
 
 // ---------------------------------------------------------------------------
 // API / servicios

@@ -1,12 +1,12 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
-import type { FaseTipo } from '@/types';
+import type { CategoriaPasoDeck } from '@/types';
 import { cn } from '@/utils/cn';
 
 export type FaseProgresoEstado = 'pendiente' | 'activa' | 'completada';
 
 export interface FaseProgreso {
-  tipo: FaseTipo;
+  tipo: CategoriaPasoDeck;
   estado: FaseProgresoEstado;
 }
 
@@ -15,11 +15,13 @@ interface ConfigFase {
   icono: string;
 }
 
-const FASES_CONFIG: Record<FaseTipo, ConfigFase> = {
+const FASES_CONFIG: Record<CategoriaPasoDeck, ConfigFase> = {
+  introduccion: { etiqueta: 'Introducción', icono: '🎬' },
   prediccion: { etiqueta: 'Predicción', icono: '🔮' },
   simulacion: { etiqueta: 'Simulación', icono: '🧪' },
   exploracion: { etiqueta: 'Exploración', icono: '🧭' },
   formalizacion: { etiqueta: 'Formalización', icono: '📐' },
+  ejercicios: { etiqueta: 'Ejercicios', icono: '✏️' },
 };
 
 const ESTILOS_CIRCULO: Record<FaseProgresoEstado, string> = {
@@ -40,9 +42,9 @@ interface ProgressBarProps {
 }
 
 /**
- * Barra de progreso segmentada por las 4 fases del ciclo POE (Prediccion, Simulacion,
- * Exploracion, Formalizacion), con relleno cyan->gold entre segmentos completados,
- * porcentaje flotante sobre la fase activa y tooltip por segmento al hover.
+ * Barra de progreso segmentada por los pasos del deck (introduccion, ciclo POE,
+ * ejercicios), con relleno cyan->gold entre segmentos completados, porcentaje
+ * flotante sobre el paso activo y tooltip por segmento al hover.
  */
 export const ProgressBar = memo(function ProgressBar({ fases, className }: ProgressBarProps) {
   const completadas = fases.filter((fase) => fase.estado === 'completada').length;
