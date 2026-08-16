@@ -12,10 +12,10 @@ const PALETA_TERMINOS = ['#0891b2', '#d97706', '#16a34a', '#db2777', '#0284c7', 
 
 /**
  * Descompone una formula LaTeX en terminos separados por + - = para animarla
- * parte a parte en FormulaAnimator (usado por NarrativeEngine y por
- * FormalizacionPhase). Sin explicaciones por termino especificas: cuando se
- * necesita un desglose curado (con explicacion real por parte), se construye
- * a mano un TerminoFormula[] en su lugar.
+ * parte a parte en FormulaAnimator (usado por ExplicacionView). Sin
+ * explicaciones por termino especificas: cuando se necesita un desglose
+ * curado (con explicacion real por parte), se construye a mano un
+ * TerminoFormula[] en su lugar.
  */
 export function dividirFormulaEnTerminos(latex: string): TerminoFormula[] {
   const partes = latex

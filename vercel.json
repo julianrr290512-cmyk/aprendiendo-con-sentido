@@ -4,9 +4,6 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
-    "api/fases/prediccion.ts": { "maxDuration": 30 },
-    "api/fases/exploracion.ts": { "maxDuration": 30 },
-    "api/fases/formalizacion.ts": { "maxDuration": 30 },
-    "api/ejercicios/generar.ts": { "maxDuration": 30 }
+    "api/explicacion/generar.ts": { "maxDuration": 30 }
   }
 }
