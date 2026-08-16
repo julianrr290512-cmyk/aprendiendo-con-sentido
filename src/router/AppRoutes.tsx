@@ -7,9 +7,9 @@ import { routeComponents } from './routes';
 
 const {
   inicio: Inicio,
-  area: Area,
-  experiencia: Experiencia,
-  resultados: Resultados,
+  grado: Grado,
+  tema: Tema,
+  explicacion: Explicacion,
 } = routeComponents;
 
 export function AppRoutes() {
@@ -27,9 +27,9 @@ export function AppRoutes() {
         <AnimatePresence mode="wait" initial={false}>
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<Inicio />} />
-            <Route path="/area/:areaId" element={<Area />} />
-            <Route path="/experiencia/:temaId" element={<Experiencia />} />
-            <Route path="/resultados/:temaId" element={<Resultados />} />
+            <Route path="/area/:areaId" element={<Grado />} />
+            <Route path="/area/:areaId/:gradoId" element={<Tema />} />
+            <Route path="/explicacion/:temaId" element={<Explicacion />} />
           </Routes>
         </AnimatePresence>
       </Suspense>

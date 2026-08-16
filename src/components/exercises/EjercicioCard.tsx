@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import type { Ejercicio, NivelBloom } from '@/types';
+import type { Ejercicio, EjercicioCategoria } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -8,15 +8,12 @@ import { cn } from '@/utils/cn';
 
 interface EjercicioCardProps {
   ejercicio: Ejercicio;
-  onResponder: (respuestaDada: string, esCorrecta: boolean) => void;
+  onResponder?: (respuestaDada: string, esCorrecta: boolean) => void;
 }
 
-const ETIQUETA_BLOOM: Record<NivelBloom, string> = {
-  comprender: 'Comprender',
-  aplicar: 'Aplicar',
-  analizar: 'Analizar',
-  evaluar: 'Evaluar',
-  crear: 'Crear',
+const ETIQUETA_CATEGORIA: Record<EjercicioCategoria, string> = {
+  conceptual: 'Conceptual',
+  procedimental: 'Procedimental',
 };
 
 export const EjercicioCard = memo(function EjercicioCard({
@@ -32,28 +29,27 @@ export const EjercicioCard = memo(function EjercicioCard({
     setEnviado(true);
     setRespuesta(opcionId);
     setEsCorrecta(correcta);
-    onResponder(opcionId, correcta);
+    onResponder?.(opcionId, correcta);
   };
 
   const evaluarAbierta = () => {
     if (enviado || !respuesta.trim()) return;
-    // Sin respuesta esperada (preguntas abiertas de analisis/evaluacion/creacion):
+    // Sin respuesta esperada (preguntas conceptuales de analisis/argumentacion):
     // se acredita por participacion, ya que no hay una unica respuesta correcta.
     const correcta = ejercicio.respuestaEsperada
       ? respuesta.trim().toLowerCase() === ejercicio.respuestaEsperada.trim().toLowerCase()
       : true;
     setEnviado(true);
     setEsCorrecta(correcta);
-    onResponder(respuesta, correcta);
+    onResponder?.(respuesta, correcta);
   };
 
   return (
     <Card>
       <CardHeader className="space-y-2">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Badge variant="cyan">{ETIQUETA_BLOOM[ejercicio.nivelBloom]}</Badge>
-          {ejercicio.esTransferencia && <Badge variant="gold">Transferencia</Badge>}
-        </div>
+        <Badge variant={ejercicio.categoria === 'conceptual' ? 'cyan' : 'gold'}>
+          {ETIQUETA_CATEGORIA[ejercicio.categoria]}
+        </Badge>
         <CardTitle className="text-base">{ejercicio.enunciado}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

@@ -6,5 +6,4 @@ export * from './FuenteContenidoBadge';
 export * from './LazyImage';
 export * from './Modal';
 export * from './PageSkeleton';
-export * from './ProgressBar';
 export * from './Skeleton';

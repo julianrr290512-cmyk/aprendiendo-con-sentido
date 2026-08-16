@@ -2,23 +2,23 @@ import { lazy } from 'react';
 
 export const routeComponents = {
   inicio: lazy(() => import('@/pages/Inicio')),
-  area: lazy(() => import('@/pages/Area')),
-  experiencia: lazy(() => import('@/pages/Experiencia')),
-  resultados: lazy(() => import('@/pages/Resultados')),
+  grado: lazy(() => import('@/pages/Grado')),
+  tema: lazy(() => import('@/pages/Tema')),
+  explicacion: lazy(() => import('@/pages/Explicacion')),
 } as const;
 
 export type RouteName = keyof typeof routeComponents;
 
 export const routePrefetchers: Record<RouteName, () => Promise<unknown>> = {
   inicio: () => import('@/pages/Inicio'),
-  area: () => import('@/pages/Area'),
-  experiencia: () => import('@/pages/Experiencia'),
-  resultados: () => import('@/pages/Resultados'),
+  grado: () => import('@/pages/Grado'),
+  tema: () => import('@/pages/Tema'),
+  explicacion: () => import('@/pages/Explicacion'),
 };
 
 export const rutas = {
   inicio: () => '/',
-  area: (areaId: string) => `/area/${areaId}`,
-  experiencia: (temaId: string) => `/experiencia/${temaId}`,
-  resultados: (temaId: string) => `/resultados/${temaId}`,
+  grado: (areaId: string) => `/area/${areaId}`,
+  tema: (areaId: string, gradoId: string) => `/area/${areaId}/${gradoId}`,
+  explicacion: (temaId: string) => `/explicacion/${temaId}`,
 } as const;

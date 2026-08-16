@@ -1,11 +1,11 @@
 # Aprendiendo con Sentido
 
-Plataforma de Matemáticas y Física para colegios de desempeño académico
-superior. El docente elige área y tema (texto libre); la IA genera una ruta
-pedagógica de nivel alto: 2 preguntas de predicción, 2 escenarios de
-exploración, una explicación formal (fórmulas en LaTeX, gráfica cuando aplica,
-analogía con la vida cotidiana del estudiante) y 5 ejercicios que escalan en
-la taxonomía de Bloom, los últimos de transferencia a otro contexto. Todo el
+Plataforma de Matemáticas y Física. El flujo es fijo: elegir área
+(Matemáticas o Física) → elegir grado (6° a 11°) → escribir un tema libre y,
+opcionalmente, en qué enfocarse. Con eso como contexto, la IA genera una
+única explicación: 3 analogías con la vida real, las fórmulas clave en LaTeX,
+gráficas cuando el concepto lo amerita (graficador SVG propio), y 2
+ejercicios de práctica — uno conceptual y uno procedimental. Todo el
 contenido dinámico usa una cascada cache → IA (Gemini) → contenido local.
 
 ## Stack
@@ -22,8 +22,8 @@ Cada pieza de contenido dinámico sigue el mismo patrón en 3 niveles:
 2. **API propia** (`api/*`, que a su vez llama a Gemini) — si `GEMINI_API_KEY` no está configurada, responde 503.
 3. **Contenido local** (`src/data/*`) — siempre disponible, así el backend nunca sea un punto único de falla.
 
-Esto aplica a: preguntas de predicción, escenarios de exploración,
-formalización (resumen, fórmulas, analogía y gráfica) y ejercicios generados.
+Esto aplica a la explicación completa: resumen, analogías, fórmulas, gráficas
+y los 2 ejercicios de práctica.
 
 ## Desarrollo local
 

@@ -48,7 +48,7 @@ function InicioPage() {
       setAreaSeleccionada(area);
       setArea(area.id);
       navegacionTimer.current = window.setTimeout(() => {
-        navegarA('area', rutas.area(area.id));
+        navegarA('grado', rutas.grado(area.id));
       }, DEMORA_NAVEGACION_MS);
     },
     [areaSeleccionada, navegarA, setArea],
@@ -137,7 +137,8 @@ function InicioPage() {
           Elige un área para comenzar
         </motion.h2>
         <p className="mt-2 text-center text-sm text-math-silver">
-          Cada área te lleva por un viaje de predicción, simulación, exploración y formalización.
+          Elige un grado y un tema, y la IA te da una explicación a tu medida: analogías, fórmulas,
+          gráficas y ejercicios de práctica.
         </p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -157,7 +158,7 @@ function InicioPage() {
                     : 'desvanecida'
               }
               onSelect={seleccionarArea}
-              onHoverPrefetch={() => prefetchRoute('area')}
+              onHoverPrefetch={() => prefetchRoute('grado')}
             />
           ))}
         </div>

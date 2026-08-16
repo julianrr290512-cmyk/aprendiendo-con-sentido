@@ -6,30 +6,28 @@ import { useNavigation } from '@/hooks/useNavigation';
 import { useSessionStore } from '@/store/sessionStore';
 import { PageTransition } from '@/components/PageTransition';
 import { SelectionHeader } from '@/components/navigation/SelectionHeader';
-import { BuscadorTema } from '@/components/selection/BuscadorTema';
+import { GradoGrid } from '@/components/selection/GradoGrid';
 import { rutas } from '@/router/routes';
-import { construirTemaId } from '@/utils/slugify';
-import type { AreaId } from '@/types';
+import type { AreaId, GradoId } from '@/types';
 
-function AreaPage() {
+function GradoPage() {
   const { areaId } = useParams<{ areaId: AreaId }>();
   const { data: areasData } = useAreas();
   const { navegarA } = useNavigation();
-  const setTema = useSessionStore((state) => state.setTema);
+  const setGrado = useSessionStore((state) => state.setGrado);
 
   const area = useMemo(
     () => areasData?.data.find((a) => a.id === areaId),
     [areasData, areaId],
   );
 
-  const irAExperiencia = useCallback(
-    (temaNombre: string) => {
+  const irATema = useCallback(
+    (gradoId: GradoId) => {
       if (!areaId) return;
-      const temaId = construirTemaId({ areaId: areaId as AreaId, temaNombre });
-      setTema({ temaId, temaNombre });
-      navegarA('experiencia', rutas.experiencia(temaId));
+      setGrado(gradoId);
+      navegarA('tema', rutas.tema(areaId, gradoId));
     },
-    [areaId, setTema, navegarA],
+    [areaId, setGrado, navegarA],
   );
 
   return (
@@ -51,13 +49,12 @@ function AreaPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       >
-        Escribe cualquier tema del área o elige una sugerencia — la ruta pedagógica se genera para
-        el tema exacto que pidas, a nivel alto.
+        ¿En qué grado estás? Esto le da contexto a la IA para adaptar el nivel de la explicación.
       </motion.p>
 
       <div className="mt-8">
         {areaId ? (
-          <BuscadorTema areaId={areaId as AreaId} onSeleccionar={irAExperiencia} />
+          <GradoGrid onSeleccionar={irATema} />
         ) : (
           <div className="h-40 animate-pulse rounded-lg bg-math-midnight/60" />
         )}
@@ -66,4 +63,4 @@ function AreaPage() {
   );
 }
 
-export default memo(AreaPage);
+export default memo(GradoPage);

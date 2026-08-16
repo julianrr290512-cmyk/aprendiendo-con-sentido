@@ -1,16 +1,19 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AreaId, SesionUsuario } from '@/types';
+import type { AreaId, GradoId, SesionUsuario } from '@/types';
 
 interface SetTemaParams {
   temaId: string;
   temaNombre: string;
+  /** Enfoque libre que el usuario escribio, como contexto adicional para la IA. */
+  descripcion: string;
 }
 
 interface SessionState {
   sesion: SesionUsuario;
   setArea: (areaId: AreaId) => void;
-  /** Fija el tema elegido por el docente (id determinista + nombre legible, siempre texto libre). */
+  setGrado: (gradoId: GradoId) => void;
+  /** Fija el tema elegido (id determinista + nombre legible + descripcion, siempre texto libre). */
   setTema: (params: SetTemaParams) => void;
   toggleSonido: () => void;
   setVolumen: (volumen: number) => void;
@@ -26,8 +29,10 @@ function crearSesionInicial(): SesionUsuario {
     id: crypto.randomUUID(),
     nombre: 'Estudiante',
     areaActualId: null,
+    gradoActualId: null,
     temaActualId: null,
     temaNombreActual: null,
+    descripcionActual: null,
     // Quien prefiere menos estimulo de movimiento suele preferir tambien
     // arrancar sin sonido; sigue siendo un toggle explicito, no un bloqueo.
     sonidoHabilitado: !prefiereMenosMovimiento,
@@ -42,9 +47,16 @@ export const useSessionStore = create<SessionState>()(
       sesion: crearSesionInicial(),
       setArea: (areaId) =>
         set((state) => ({ sesion: { ...state.sesion, areaActualId: areaId } })),
-      setTema: ({ temaId, temaNombre }) =>
+      setGrado: (gradoId) =>
+        set((state) => ({ sesion: { ...state.sesion, gradoActualId: gradoId } })),
+      setTema: ({ temaId, temaNombre, descripcion }) =>
         set((state) => ({
-          sesion: { ...state.sesion, temaActualId: temaId, temaNombreActual: temaNombre },
+          sesion: {
+            ...state.sesion,
+            temaActualId: temaId,
+            temaNombreActual: temaNombre,
+            descripcionActual: descripcion,
+          },
         })),
       toggleSonido: () =>
         set((state) => ({
