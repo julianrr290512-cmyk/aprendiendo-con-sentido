@@ -4,9 +4,9 @@ import { useExplicacionGenerada } from '@/hooks/useExplicacion';
 import { useSessionStore } from '@/store/sessionStore';
 import { PageTransition } from '@/components/PageTransition';
 import { ExplicacionView } from '@/components/explicacion/ExplicacionView';
+import { ExplicacionLoading } from '@/components/explicacion/ExplicacionLoading';
 import { SoundPlayer } from '@/components/narrative/SoundPlayer';
 import { FuenteContenidoBadge } from '@/components/ui/FuenteContenidoBadge';
-import { Skeleton } from '@/components/ui/Skeleton';
 import type { GenerarExplicacionParams } from '@/services/explicacionGenerator';
 
 function ExplicacionPage() {
@@ -51,10 +51,7 @@ function ExplicacionPage() {
       </div>
 
       {explicacion.isLoading || !explicacion.data ? (
-        <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 px-6 py-24">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-40 w-full" />
-        </div>
+        <ExplicacionLoading />
       ) : (
         <div className="px-6 pb-16">
           <ExplicacionView
